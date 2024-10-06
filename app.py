@@ -38,14 +38,14 @@ def calculate():
         d = float(combobox_d.get())
 
         if a > b:
-            messagebox.showerror("Błąd", "Liczba a musi być mniejsza lub równa liczbie b")
+            messagebox.showerror("Błąd", "Liczba a musi być mniejsza lub równa b")
             return
 
         table = generate_table(a, b, N, d)
         show_table(table)
 
     except ValueError:
-        messagebox.showerror("Błąd", "Proszę podać prawidłowe liczby")
+        messagebox.showerror("Błąd", "Podano nieprawidłowe liczby")
 
 def show_table(results):
     for row in table.get_children():
@@ -79,7 +79,7 @@ combobox_d = ttk.Combobox(root, values=[0.1, 0.01, 0.001, 0.0001])
 combobox_d.grid(row=3, column=1, sticky='w', padx=5, pady=5)
 combobox_d.current(0)
 
-button = tk.Button(root, text="Licz", command=calculate)
+button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
 columns = ["L.P.", "x(real)", "x(int)", "x(bin)", "x(int)2", "x(real)2", "f(x)"]
