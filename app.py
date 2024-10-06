@@ -7,12 +7,18 @@ def functions(a, b, x, d):
     l = math.ceil(math.log2((b-a)/d + 1))
     try:
         real_to_int = (x-a)*(2**l - 1)/(b-a)
-        int_to_bin = bin(real_to_int)
+        int_to_bin = bin(int(round(real_to_int)))[2:]
         bin_to_int = int(str(int_to_bin), 2)
         int_to_real = bin_to_int*(b-a)/(2**l - 1) + a
         f_x = -(int_to_real+1)*(int_to_real-1)*(int_to_real-2)
 
-        return [real_to_int, int_to_bin, bin_to_int, int_to_real, f_x]
+        return [
+            round(real_to_int, 3),
+            int_to_bin,            # Keep as string
+            bin_to_int,            # Keep as int (you can convert to float if needed)
+            round(int_to_real, 3),
+            round(f_x, 3)
+        ]
     except ValueError:
         return [float('nan')] * 5
 
