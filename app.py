@@ -3,31 +3,28 @@ from tkinter import ttk, messagebox
 import math
 import random
 
-# Funkcje matematyczne do obliczeń
-def funkcje_matematyczne(x, d):
+def functions(a, b, x, d):
+    l = math.ceil(math.log2((b-a)/d + 1))
     try:
-        sin_x = math.sin(x)
-        cos_x = math.cos(sin_x)  # cos przyjmuje wynik sin
-        tan_x = math.tan(cos_x)   # tan przyjmuje wynik cos
-        sqrt_x = math.sqrt(abs(tan_x))  # sqrt przyjmuje wynik tan
-        x_d = tan_x ** d           # x^d przyjmuje wynik tan
-        ln_x = math.log(abs(x_d)) if x_d != 0 else float('nan')  # ln przyjmuje wynik x^d
+        real_to_int = (x-a)*(2**l - 1)/(b-a)
+        int_to_bin = bin(real_to_int)
+        bin_to_int = int(str(int_to_bin), 2)
+        int_to_real = bin_to_int*(b-a)/(2**l - 1) + a
+        f_x = -(int_to_real+1)*(int_to_real-1)*(int_to_real-2)
 
-        return [sin_x, cos_x, tan_x, sqrt_x, x_d, ln_x]
+        return [real_to_int, int_to_bin, bin_to_int, int_to_real, f_x]
     except ValueError:
-        return [float('nan'), float('nan'), float('nan'), float('nan'), float('nan'), float('nan')]
+        return [float('nan')] * 5
 
-# Funkcja do generowania tabeli
-def generuj_tabele(a, b, N, d):
-    wyniki = []
+def generate_table(a, b, N, d):
+    results = []
     for _ in range(N):
         x = round(random.uniform(a, b), 3)
-        funkcje = funkcje_matematyczne(x, d)
-        wyniki.append([x] + funkcje)  # Dodaj x na początku
-    return wyniki
+        result = functions(a, b, x, d)
+        results.append([x] + result)
+    return results
 
-# Obsługa przycisku "Licz"
-def oblicz():
+def calculate():
     try:
         a = int(entry_a.get())
         b = int(entry_b.get())
@@ -38,69 +35,61 @@ def oblicz():
             messagebox.showerror("Błąd", "Liczba a musi być mniejsza lub równa liczbie b")
             return
 
-        tabela_wynikow = generuj_tabele(a, b, N, d)
-        wyswietl_tabele(tabela_wynikow)
+        table = generate_table(a, b, N, d)
+        show_table(table)
 
     except ValueError:
         messagebox.showerror("Błąd", "Proszę podać prawidłowe liczby")
 
-# Funkcja do wyświetlenia wyników w tabeli
-def wyswietl_tabele(wyniki):
-    for row in tabela.get_children():
-        tabela.delete(row)
+def show_table(results):
+    for row in table.get_children():
+        table.delete(row)
 
-    for index, wynik in enumerate(wyniki, start=1):
-        tabela.insert("", "end", values=[index] + wynik)  # Dodaj numer wiersza
+    for index, entry in enumerate(results, start=1):
+        table.insert("", "end", values=[index] + entry)
 
-# Tworzenie okna
 root = tk.Tk()
-root.title("Aplikacja do obliczeń matematycznych")
-root.geometry("450x300")  # Ustawia rozmiar okna na 450x300 pikseli
+root.title("Laboratorium 1")
+root.geometry("600x500")
 
-# Etykiety i pola wejściowe
 label_a = tk.Label(root, text="Podaj a:")
-label_a.grid(row=0, column=0, sticky='w', padx=5, pady=5)  # Wyrównanie do lewej
-entry_a = tk.Entry(root, width=10)  # Ustawia szerokość pola na 10 znaków
-entry_a.grid(row=0, column=1, sticky='w', padx=5, pady=5)  # Wyrównanie do lewej
+label_a.grid(row=0, column=0, sticky='w', padx=5, pady=5)
+entry_a = tk.Entry(root, width=10)
+entry_a.grid(row=0, column=1, sticky='w', padx=5, pady=5)
 
 label_b = tk.Label(root, text="Podaj b:")
-label_b.grid(row=1, column=0, sticky='w', padx=5, pady=5)  # Wyrównanie do lewej
-entry_b = tk.Entry(root, width=10)  # Ustawia szerokość pola na 10 znaków
-entry_b.grid(row=1, column=1, sticky='w', padx=5, pady=5)  # Wyrównanie do lewej
+label_b.grid(row=1, column=0, sticky='w', padx=5, pady=5)
+entry_b = tk.Entry(root, width=10)
+entry_b.grid(row=1, column=1, sticky='w', padx=5, pady=5)
 
 label_N = tk.Label(root, text="Podaj N:")
-label_N.grid(row=2, column=0, sticky='w', padx=5, pady=5)  # Wyrównanie do lewej
-entry_N = tk.Entry(root, width=10)  # Ustawia szerokość pola na 10 znaków
-entry_N.grid(row=2, column=1, sticky='w', padx=5, pady=5)  # Wyrównanie do lewej
+label_N.grid(row=2, column=0, sticky='w', padx=5, pady=5)
+entry_N = tk.Entry(root, width=10)
+entry_N.grid(row=2, column=1, sticky='w', padx=5, pady=5)
 
 label_d = tk.Label(root, text="Wybierz d:")
-label_d.grid(row=3, column=0, sticky='w', padx=5, pady=5)  # Wyrównanie do lewej
+label_d.grid(row=3, column=0, sticky='w', padx=5, pady=5)
 combobox_d = ttk.Combobox(root, values=[0.1, 0.01, 0.001, 0.0001])
-combobox_d.grid(row=3, column=1, sticky='w', padx=5, pady=5)  # Wyrównanie do lewej
+combobox_d.grid(row=3, column=1, sticky='w', padx=5, pady=5)
 combobox_d.current(0)
 
-# Przycisk
-button = tk.Button(root, text="Licz", command=oblicz)
+button = tk.Button(root, text="Licz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
-# Tabela wyników
-columns = ["L.P.", "x", "sin(x)", "cos(sin(x))", "tan(cos(sin(x)))", "sqrt(|tan(cos(sin(x)))|)", "tan(cos(sin(x)))^d", "ln(|tan(cos(sin(x)))^d|)"]
-tabela = ttk.Treeview(root, columns=columns, show="headings")
-tabela.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
+columns = ["L.P.", "x(real)", "x(int)", "x(bin)", "x(int)2", "x(real)2", "f(x)"]
+table = ttk.Treeview(root, columns=columns, show="headings")
+table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
-# Ustawienie szerokości kolumn tabeli
-tabela.column("L.P.", width=40)  # Szerokość kolumny L.P.
-tabela.column("x", width=40)  # Szerokość kolumny x
-tabela.column("sin(x)", width=60)  # Szerokość kolumny sin(x)
-tabela.column("cos(sin(x))", width=90)  # Szerokość kolumny cos(sin(x))
-tabela.column("tan(cos(sin(x)))", width=120)  # Szerokość kolumny tan(cos(sin(x)))
-tabela.column("sqrt(|tan(cos(sin(x)))|)", width=90)  # Szerokość kolumny sqrt
-tabela.column("tan(cos(sin(x)))^d", width=90)  # Szerokość kolumny x^d
-tabela.column("ln(|tan(cos(sin(x)))^d|)", width=90)  # Szerokość kolumny ln
+table.column("L.P.", width=40)
+table.column("x(real)", width=80)
+table.column("x(int)", width=80)
+table.column("x(bin)", width=80)
+table.column("x(int)2", width=80)
+table.column("x(real)2", width=80)
+table.column("f(x)", width=80)
 
-# Ustawienia nagłówków tabeli
 for col in columns:
-    tabela.heading(col, text=col)
+    table.heading(col, text=col)
 
-# Uruchomienie aplikacji
+# launch the app
 root.mainloop()
