@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 import math
 import random
 
+# zdefiniowanie funkcji do tabeli
 def functions(a, b, x, d):
     l = math.ceil(math.log2((b-a)/d + 1))
     try:
@@ -14,14 +15,16 @@ def functions(a, b, x, d):
 
         return [
             round(real_to_int, 3),
-            int_to_bin,            # Keep as string
-            bin_to_int,            # Keep as int (you can convert to float if needed)
+            int_to_bin,
+            bin_to_int,
             round(int_to_real, 3),
-            round(f_x, 3)
+            round(f_x, 3),
+            l
         ]
     except ValueError:
-        return [float('nan')] * 5
+        return [float('nan')] * 6
 
+# wygenerowanie tabeli
 def generate_table(a, b, N, d):
     results = []
     for _ in range(N):
@@ -30,6 +33,7 @@ def generate_table(a, b, N, d):
         results.append([x] + result)
     return results
 
+# obliczenie wartości dla losowych argumentów
 def calculate():
     try:
         a = int(entry_a.get())
@@ -47,6 +51,7 @@ def calculate():
     except ValueError:
         messagebox.showerror("Błąd", "Podano nieprawidłowe liczby")
 
+# wypełnianie tabeli
 def show_table(results):
     for row in table.get_children():
         table.delete(row)
@@ -54,35 +59,42 @@ def show_table(results):
     for index, entry in enumerate(results, start=1):
         table.insert("", "end", values=[index] + entry)
 
+# wygnenerowanie okienka
 root = tk.Tk()
 root.title("Laboratorium 1")
 root.geometry("600x500")
 
+# input a
 label_a = tk.Label(root, text="Podaj a:")
 label_a.grid(row=0, column=0, sticky='w', padx=5, pady=5)
 entry_a = tk.Entry(root, width=10)
 entry_a.grid(row=0, column=1, sticky='w', padx=5, pady=5)
 
+# input b
 label_b = tk.Label(root, text="Podaj b:")
 label_b.grid(row=1, column=0, sticky='w', padx=5, pady=5)
 entry_b = tk.Entry(root, width=10)
 entry_b.grid(row=1, column=1, sticky='w', padx=5, pady=5)
 
+# input N
 label_N = tk.Label(root, text="Podaj N:")
 label_N.grid(row=2, column=0, sticky='w', padx=5, pady=5)
 entry_N = tk.Entry(root, width=10)
 entry_N.grid(row=2, column=1, sticky='w', padx=5, pady=5)
 
+# input d
 label_d = tk.Label(root, text="Wybierz d:")
 label_d.grid(row=3, column=0, sticky='w', padx=5, pady=5)
 combobox_d = ttk.Combobox(root, values=[0.1, 0.01, 0.001, 0.0001])
 combobox_d.grid(row=3, column=1, sticky='w', padx=5, pady=5)
 combobox_d.current(0)
 
+# button
 button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
-columns = ["L.P.", "x(real)", "x(int)", "x(bin)", "x(int)2", "x(real)2", "f(x)"]
+# table interface
+columns = ["L.P.", "x(real)", "x(int)", "x(bin)", "x(int)2", "x(real)2", "f(x)", "l"]
 table = ttk.Treeview(root, columns=columns, show="headings")
 table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
@@ -93,6 +105,7 @@ table.column("x(bin)", width=80)
 table.column("x(int)2", width=80)
 table.column("x(real)2", width=80)
 table.column("f(x)", width=80)
+table.column("l", width=80)
 
 for col in columns:
     table.heading(col, text=col)
