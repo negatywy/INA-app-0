@@ -5,22 +5,25 @@ import random
 
 # Funkcje matematyczne do obliczeń
 def funkcje_matematyczne(x, d):
-    return {
-        'sin(x)': math.sin(x),
-        'cos(x)': math.cos(x),
-        'tan(x)': math.tan(x),
-        'sqrt(|x|)': math.sqrt(abs(x)),
-        'x^d': x ** d,
-        'ln(|x|)': math.log(abs(x)) if x != 0 else float('nan')
-    }
+    try:
+        sin_x = math.sin(x)
+        cos_x = math.cos(sin_x)  # cos przyjmuje wynik sin
+        tan_x = math.tan(cos_x)   # tan przyjmuje wynik cos
+        sqrt_x = math.sqrt(abs(tan_x))  # sqrt przyjmuje wynik tan
+        x_d = tan_x ** d           # x^d przyjmuje wynik tan
+        ln_x = math.log(abs(x_d)) if x_d != 0 else float('nan')  # ln przyjmuje wynik x^d
+
+        return [sin_x, cos_x, tan_x, sqrt_x, x_d, ln_x]
+    except ValueError:
+        return [float('nan'), float('nan'), float('nan'), float('nan'), float('nan'), float('nan')]
 
 # Funkcja do generowania tabeli
 def generuj_tabele(a, b, N, d):
     wyniki = []
     for _ in range(N):
-        x = random.randint(a, b)
+        x = round(random.uniform(a, b), 3)
         funkcje = funkcje_matematyczne(x, d)
-        wyniki.append([x] + list(funkcje.values()))
+        wyniki.append([x] + funkcje)  # Dodaj x na początku
     return wyniki
 
 # Obsługa przycisku "Licz"
@@ -29,7 +32,7 @@ def oblicz():
         a = int(entry_a.get())
         b = int(entry_b.get())
         N = int(entry_N.get())
-        d = int(combobox_d.get())
+        d = float(combobox_d.get())
 
         if a > b:
             messagebox.showerror("Błąd", "Liczba a musi być mniejsza lub równa liczbie b")
@@ -46,13 +49,13 @@ def wyswietl_tabele(wyniki):
     for row in tabela.get_children():
         tabela.delete(row)
 
-    for wynik in wyniki:
-        tabela.insert("", "end", values=wynik)
+    for index, wynik in enumerate(wyniki, start=1):
+        tabela.insert("", "end", values=[index] + wynik)  # Dodaj numer wiersza
 
 # Tworzenie okna
 root = tk.Tk()
 root.title("Aplikacja do obliczeń matematycznych")
-root.geometry("400x300")  # Ustawia rozmiar okna na 400x300 pikseli
+root.geometry("450x300")  # Ustawia rozmiar okna na 450x300 pikseli
 
 # Etykiety i pola wejściowe
 label_a = tk.Label(root, text="Podaj a:")
@@ -81,18 +84,19 @@ button = tk.Button(root, text="Licz", command=oblicz)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
 # Tabela wyników
-columns = ["x", "sin(x)", "cos(x)", "tan(x)", "sqrt(|x|)", "x^d", "ln(|x|)"]
+columns = ["L.P.", "x", "sin(x)", "cos(sin(x))", "tan(cos(sin(x)))", "sqrt(|tan(cos(sin(x)))|)", "tan(cos(sin(x)))^d", "ln(|tan(cos(sin(x)))^d|)"]
 tabela = ttk.Treeview(root, columns=columns, show="headings")
 tabela.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
 # Ustawienie szerokości kolumn tabeli
+tabela.column("L.P.", width=40)  # Szerokość kolumny L.P.
 tabela.column("x", width=40)  # Szerokość kolumny x
 tabela.column("sin(x)", width=60)  # Szerokość kolumny sin(x)
-tabela.column("cos(x)", width=60)  # Szerokość kolumny cos(x)
-tabela.column("tan(x)", width=60)  # Szerokość kolumny tan(x)
-tabela.column("sqrt(|x|)", width=70)  # Szerokość kolumny sqrt(|x|)
-tabela.column("x^d", width=60)  # Szerokość kolumny x^d
-tabela.column("ln(|x|)", width=70)  # Szerokość kolumny ln(|x|)
+tabela.column("cos(sin(x))", width=90)  # Szerokość kolumny cos(sin(x))
+tabela.column("tan(cos(sin(x)))", width=120)  # Szerokość kolumny tan(cos(sin(x)))
+tabela.column("sqrt(|tan(cos(sin(x)))|)", width=90)  # Szerokość kolumny sqrt
+tabela.column("tan(cos(sin(x)))^d", width=90)  # Szerokość kolumny x^d
+tabela.column("ln(|tan(cos(sin(x)))^d|)", width=90)  # Szerokość kolumny ln
 
 # Ustawienia nagłówków tabeli
 for col in columns:
