@@ -7,6 +7,7 @@ import random
 def functions(a, b, x, d):
     l = math.ceil(math.log2((b-a)/d + 1))
     try:
+        xx = dictD[combobox_d.get()]
         real_to_int = (x-a)*(2**l - 1)/(b-a)
         int_to_bin = bin(int(round(real_to_int)))[2:]
         bin_to_int = int(str(int_to_bin), 2)
@@ -14,11 +15,11 @@ def functions(a, b, x, d):
         f_x = -(int_to_real+1)*(int_to_real-1)*(int_to_real-2)
 
         return [
-            round(real_to_int, 3),
+            round(real_to_int, xx),
             int_to_bin,
             bin_to_int,
-            round(int_to_real, 3),
-            round(f_x, 3)
+            round(int_to_real, xx),
+            round(f_x, xx)
         ]
     except ValueError:
         return [float('nan')] * 5
@@ -26,8 +27,9 @@ def functions(a, b, x, d):
 # wygenerowanie tabeli
 def generate_table(a, b, N, d):
     results = []
+    xx = dictD[combobox_d.get()]+1
     for _ in range(N):
-        x = round(random.uniform(a, b), 3)
+        x = round(random.uniform(a, b), xx)
         result = functions(a, b, x, d)
         results.append([x] + result)
     return results
@@ -82,6 +84,12 @@ entry_N = tk.Entry(root, width=10)
 entry_N.grid(row=2, column=1, sticky='w', padx=5, pady=5)
 
 # input d
+dictD = {
+    "0.1": 1,
+    "0.01": 2,
+    "0.001": 3,
+    "0.0001": 4
+}
 label_d = tk.Label(root, text="Wybierz d:")
 label_d.grid(row=3, column=0, sticky='w', padx=5, pady=5)
 combobox_d = ttk.Combobox(root, values=[0.1, 0.01, 0.001, 0.0001])
