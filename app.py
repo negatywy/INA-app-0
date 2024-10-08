@@ -18,11 +18,10 @@ def functions(a, b, x, d):
             int_to_bin,
             bin_to_int,
             round(int_to_real, 3),
-            round(f_x, 3),
-            l
+            round(f_x, 3)
         ]
     except ValueError:
-        return [float('nan')] * 6
+        return [float('nan')] * 5
 
 # wygenerowanie tabeli
 def generate_table(a, b, N, d):
@@ -61,7 +60,7 @@ def show_table(results):
 
 # wygnenerowanie okienka
 root = tk.Tk()
-root.title("Laboratorium 1")
+root.title("Laboratorium 1: f(x)= -(x+1)(x-1)(x-2)")
 root.geometry("600x500")
 
 # input a
@@ -94,7 +93,7 @@ button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
 # table interface
-columns = ["L.P.", "x(real)", "x(int)", "x(bin)", "x(int)2", "x(real)2", "f(x)", "l"]
+columns = ["L.P.", "x(real)", "x(int)", "x(bin)", "x(int)2", "x(real)2", "f(x)"]
 table = ttk.Treeview(root, columns=columns, show="headings")
 table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
@@ -105,7 +104,6 @@ table.column("x(bin)", width=80)
 table.column("x(int)2", width=80)
 table.column("x(real)2", width=80)
 table.column("f(x)", width=80)
-table.column("l", width=80)
 
 for col in columns:
     table.heading(col, text=col)
