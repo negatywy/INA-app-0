@@ -86,8 +86,29 @@ def calculate():
 
         g_sum = sum([row[2] for row in table_data]) 
 
+        # Normalize p values so their sum is exactly 1
+        p_sum = 0
         for row in table_data:
-            row.append(round(row[2] / g_sum, xx))
+            p_value = round(row[2] / g_sum, xx)
+            row.append(p_value)
+            p_sum += p_value
+
+        # Calculate the error due to rounding
+        error = p_sum - 1
+
+        # Distribute the error across the p values (except the last one)
+        for i in range(len(table_data) - 1):
+            table_data[i][4] -= error / len(table_data)
+
+        q_values = []
+        q_sum = 0
+        for row in table_data:
+            p_value = row[4]
+            q_sum += p_value
+            q_values.append(q_sum)
+
+        for i, row in enumerate(table_data):
+            row.append(round(q_values[i], xx))
 
         show_table(table_data)
 
@@ -143,7 +164,7 @@ button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
 # table interface
-columns = ["L.P.", "x(real)", "f(x)", "g(x)", "x(bin)", "p"]
+columns = ["L.P.", "x(real)", "f(x)", "g(x)", "x(bin)", "p", "q"]
 table = ttk.Treeview(root, columns=columns, show="headings")
 table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
@@ -153,6 +174,8 @@ table.column("f(x)", width=80)
 table.column("g(x)", width=80)
 table.column("x(bin)", width=100)
 table.column("p", width=80)
+
+table.column("q", width=80)
 
 for col in columns:
     table.heading(col, text=col)
