@@ -152,7 +152,7 @@ table.column("x(real)", width=80)
 table.column("f(x)", width=80)
 table.column("g(x)", width=80)
 table.column("x(bin)", width=100)
-table.column("p", width=80
+table.column("p", width=80)
 
 for col in columns:
     table.heading(col, text=col)
