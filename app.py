@@ -3,35 +3,69 @@ from tkinter import ttk, messagebox
 import math
 import random
 
-# zdefiniowanie funkcji do tabeli
+def real_to_bin(a, b, x_real, d):
+    l = math.ceil(math.log2((b - a) / d + 1))
+    real_to_int = (x_real - a) * (2**l - 1) / (b - a)
+    int_to_bin = bin(int(round(real_to_int)))[2:].zfill(l)
+    return real_to_int, int_to_bin
+
+def f_x(x_real):
+    return -(x_real + 1) * (x_real - 1) * (x_real - 2)
+
+def min_f_x(a, b, d):
+    min = f_x(a)
+    x = a
+    while x <= b:
+        f = f_x(x)
+        if f < min:
+            min= f
+        x += d
+
+    return min
+
+def max_f_x(a, b, d):
+    max = f_x(a)
+    x = a
+    while x <= b:
+        f = f_x(x)
+        if f > max:
+            max = f
+        x += d
+
+    return max
+
+def g_x(x_real, a, b, d, max = True):
+    if max:
+        g = f_x(x_real) - min_f_x(a, b, d) + d
+    else:
+        g = -(f_x(x_real) - max_f_x(a, b, d)) + d
+    return g
+
+# Funkcja całościowa
 def functions(a, b, x, d):
-    l = math.ceil(math.log2((b-a)/d + 1))
     try:
         xx = dictD[combobox_d.get()]
-        real_to_int = (x-a)*(2**l - 1)/(b-a)
-        int_to_bin = bin(int(round(real_to_int)))[2:].zfill(l)
-        bin_to_int = int(str(int_to_bin), 2)
-        int_to_real = bin_to_int*(b-a)/(2**l - 1) + a
-        f_x = -(int_to_real+1)*(int_to_real-1)*(int_to_real-2)
+        real_to_int, int_to_bin = real_to_bin(a, b, x, d)
+        g = g_x(x, a, b, d)
+        f = f_x(x)
 
         return [
-            round(real_to_int, xx),
-            int_to_bin,
-            bin_to_int,
-            round(int_to_real, xx),
-            round(f_x, xx)
+            round(x, xx),
+            round(g, xx),
+            round(f, xx),
+            int_to_bin
         ]
     except ValueError:
-        return [float('nan')] * 5
+        return [float('nan')] * 4
 
 # wygenerowanie tabeli
 def generate_table(a, b, N, d):
     results = []
-    xx = dictD[combobox_d.get()]+1
+    xx = dictD[combobox_d.get()] + 1
     for _ in range(N):
         x = round(random.uniform(a, b), xx)
         result = functions(a, b, x, d)
-        results.append([x] + result)
+        results.append(result)
     return results
 
 # obliczenie wartości dla losowych argumentów
@@ -46,8 +80,8 @@ def calculate():
             messagebox.showerror("Błąd", "Liczba a musi być mniejsza lub równa b")
             return
 
-        table = generate_table(a, b, N, d)
-        show_table(table)
+        table_data = generate_table(a, b, N, d)
+        show_table(table_data)
 
     except ValueError:
         messagebox.showerror("Błąd", "Podano nieprawidłowe liczby")
@@ -62,7 +96,7 @@ def show_table(results):
 
 # wygnenerowanie okienka
 root = tk.Tk()
-root.title("Laboratorium 1: f(x)= -(x+1)(x-1)(x-2)")
+root.title("Laboratorium 2: f(x)= -(x+1)(x-1)(x-2)")
 root.state('zoomed')
 
 # input a
@@ -101,17 +135,15 @@ button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
 # table interface
-columns = ["L.P.", "x(real)", "x(int)", "x(bin)", "x(int)2", "x(real)2", "f(x)"]
+columns = ["L.P.", "x(real)", "f(x)", "g(x)", "x(bin)"]
 table = ttk.Treeview(root, columns=columns, show="headings")
 table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
 table.column("L.P.", width=40)
 table.column("x(real)", width=80)
-table.column("x(int)", width=80)
-table.column("x(bin)", width=80)
-table.column("x(int)2", width=80)
-table.column("x(real)2", width=80)
 table.column("f(x)", width=80)
+table.column("g(x)", width=80)
+table.column("x(bin)", width=100)
 
 for col in columns:
     table.heading(col, text=col)
