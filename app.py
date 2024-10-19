@@ -18,9 +18,8 @@ def min_f_x(a, b, d):
     while x <= b:
         f = f_x(x)
         if f < min:
-            min= f
+            min = f
         x += d
-
     return min
 
 def max_f_x(a, b, d):
@@ -31,10 +30,9 @@ def max_f_x(a, b, d):
         if f > max:
             max = f
         x += d
-
     return max
 
-def g_x(x_real, a, b, d, max = True):
+def g_x(x_real, a, b, d, max=True):
     if max:
         g = f_x(x_real) - min_f_x(a, b, d) + d
     else:
@@ -46,13 +44,13 @@ def functions(a, b, x, d):
     try:
         xx = dictD[combobox_d.get()]
         real_to_int, int_to_bin = real_to_bin(a, b, x, d)
-        g = g_x(x, a, b, d)
         f = f_x(x)
+        g = g_x(x, a, b, d)
 
         return [
             round(x, xx),
-            round(g, xx),
             round(f, xx),
+            round(g, xx),
             int_to_bin
         ]
     except ValueError:
@@ -62,10 +60,12 @@ def functions(a, b, x, d):
 def generate_table(a, b, N, d):
     results = []
     xx = dictD[combobox_d.get()] + 1
+
     for _ in range(N):
         x = round(random.uniform(a, b), xx)
         result = functions(a, b, x, d)
         results.append(result)
+
     return results
 
 # obliczenie wartości dla losowych argumentów
@@ -75,12 +75,20 @@ def calculate():
         b = int(entry_b.get())
         N = int(entry_N.get())
         d = float(combobox_d.get())
+        xx = dictD[combobox_d.get()] + 1
 
         if a > b:
             messagebox.showerror("Błąd", "Liczba a musi być mniejsza lub równa b")
             return
 
         table_data = generate_table(a, b, N, d)
+        show_table(table_data)
+
+        g_sum = sum([row[2] for row in table_data]) 
+
+        for row in table_data:
+            row.append(round(row[2] / g_sum, xx))
+
         show_table(table_data)
 
     except ValueError:
@@ -135,7 +143,7 @@ button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
 # table interface
-columns = ["L.P.", "x(real)", "f(x)", "g(x)", "x(bin)"]
+columns = ["L.P.", "x(real)", "f(x)", "g(x)", "x(bin)", "p"]
 table = ttk.Treeview(root, columns=columns, show="headings")
 table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
@@ -144,6 +152,7 @@ table.column("x(real)", width=80)
 table.column("f(x)", width=80)
 table.column("g(x)", width=80)
 table.column("x(bin)", width=100)
+table.column("p", width=80
 
 for col in columns:
     table.heading(col, text=col)
