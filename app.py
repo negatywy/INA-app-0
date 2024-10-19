@@ -86,19 +86,8 @@ def calculate():
 
         g_sum = sum([row[2] for row in table_data]) 
 
-        # Normalize p values so their sum is exactly 1
-        p_sum = 0
         for row in table_data:
-            p_value = round(row[2] / g_sum, xx)
-            row.append(p_value)
-            p_sum += p_value
-
-        # Calculate the error due to rounding
-        error = p_sum - 1
-
-        # Distribute the error across the p values (except the last one)
-        for i in range(len(table_data) - 1):
-            table_data[i][4] -= error / len(table_data)
+            row.append(round(row[2] / g_sum, xx))
 
         q_values = []
         q_sum = 0
@@ -106,6 +95,9 @@ def calculate():
             p_value = row[4]
             q_sum += p_value
             q_values.append(q_sum)
+
+        # fix for the rounding error
+        q_values[-1] = 1.0
 
         for i, row in enumerate(table_data):
             row.append(round(q_values[i], xx))
