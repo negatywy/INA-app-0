@@ -9,7 +9,7 @@ def functions(a, b, x, d):
     try:
         xx = dictD[combobox_d.get()]
         real_to_int = (x-a)*(2**l - 1)/(b-a)
-        int_to_bin = bin(int(round(real_to_int)))[2:]
+        int_to_bin = bin(int(round(real_to_int)))[2:].zfill(l)
         bin_to_int = int(str(int_to_bin), 2)
         int_to_real = bin_to_int*(b-a)/(2**l - 1) + a
         f_x = -(int_to_real+1)*(int_to_real-1)*(int_to_real-2)
@@ -63,7 +63,7 @@ def show_table(results):
 # wygnenerowanie okienka
 root = tk.Tk()
 root.title("Laboratorium 1: f(x)= -(x+1)(x-1)(x-2)")
-root.geometry("600x500")
+root.state('zoomed')
 
 # input a
 label_a = tk.Label(root, text="Podaj a:")
