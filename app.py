@@ -7,7 +7,7 @@ def real_to_bin(a, b, x_real, d):
     l = math.ceil(math.log2((b - a) / d + 1))
     real_to_int = (x_real - a) * (2**l - 1) / (b - a)
     int_to_bin = bin(int(round(real_to_int)))[2:].zfill(l)
-    return real_to_int, int_to_bin
+    return int_to_bin
 
 def f_x(x_real):
     return -(x_real + 1) * (x_real - 1) * (x_real - 2)
@@ -43,18 +43,16 @@ def g_x(x_real, a, b, d, max=True):
 def functions(a, b, x, d):
     try:
         xx = dictD[combobox_d.get()]
-        real_to_int, int_to_bin = real_to_bin(a, b, x, d)
         f = f_x(x)
         g = g_x(x, a, b, d)
 
         return [
             round(x, xx),
             round(f, xx),
-            round(g, xx),
-            int_to_bin
+            round(g, xx)
         ]
     except ValueError:
-        return [float('nan')] * 4
+        return [float('nan')] * 3
 
 # wygenerowanie tabeli
 def generate_table(a, b, N, d):
@@ -92,7 +90,7 @@ def calculate():
         q_values = []
         q_sum = 0
         for row in table_data:
-            p_value = row[4]
+            p_value = row[3]
             q_sum += p_value
             q_values.append(q_sum)
 
@@ -102,6 +100,38 @@ def calculate():
         for i, row in enumerate(table_data):
             row.append(round(q_values[i], xx))
 
+        r_values = []
+        for row in table_data:
+            r_value = round(random.uniform(0, 1), xx)
+            r_values.append(r_value)
+            row.append(r_value)
+
+        x_new_column = []
+        x_bin_column = []
+        for i in range(len(table_data)):
+            if i == 0:
+                q_prev = 0
+            else:
+                q_prev = q_values[i - 1]
+            q_curr = q_values[i]
+            r_value = r_values[i]
+
+            if q_prev < r_value <= q_curr:
+                selected_x = table_data[i][0]
+                x_new_column.append(selected_x)
+                # Perform binary conversion for the selected x
+                x_bin = real_to_bin(a, b, selected_x, d)
+                x_bin_column.append(x_bin)
+            else:
+                x_new_column.append("")
+                x_bin_column.append("")
+
+        # Append the new x and its binary representation to each row
+        for i, row in enumerate(table_data):
+            row.append(x_new_column[i])
+            row.append(x_bin_column[i])
+
+        # Show the updated table with new columns
         show_table(table_data)
 
     except ValueError:
@@ -156,7 +186,7 @@ button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
 # table interface
-columns = ["L.P.", "x(real)", "f(x)", "g(x)", "x(bin)", "p", "q"]
+columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "new x", "x(bin)"]
 table = ttk.Treeview(root, columns=columns, show="headings")
 table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
@@ -164,10 +194,11 @@ table.column("L.P.", width=40)
 table.column("x(real)", width=80)
 table.column("f(x)", width=80)
 table.column("g(x)", width=80)
-table.column("x(bin)", width=100)
 table.column("p", width=80)
-
 table.column("q", width=80)
+table.column("r", width=80)
+table.column("new x", width=80)
+table.column("x(bin)", width=100)
 
 for col in columns:
     table.heading(col, text=col)
