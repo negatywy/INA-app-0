@@ -106,32 +106,23 @@ def calculate():
             r_values.append(r_value)
             row.append(r_value)
 
-        x_new_column = []
-        x_bin_column = []
+        x_selection = []
+        x_bin_selection = []
+
         for i in range(len(table_data)):
-            if i == 0:
-                q_prev = 0
-            else:
-                q_prev = q_values[i - 1]
-            q_curr = q_values[i]
-            r_value = r_values[i]
+            j = 0
+            while j < len(q_values) and r_values[i] > q_values[j]:
+                j += 1
+            selected_x = table_data[j][0]
+            x_selection.append(selected_x)
+            selected_x_bin = real_to_bin(a, b, selected_x, d)
+            x_bin_selection.append(selected_x_bin)
 
-            if q_prev < r_value <= q_curr:
-                selected_x = table_data[i][0]
-                x_new_column.append(selected_x)
-                # Perform binary conversion for the selected x
-                x_bin = real_to_bin(a, b, selected_x, d)
-                x_bin_column.append(x_bin)
-            else:
-                x_new_column.append("")
-                x_bin_column.append("")
 
-        # Append the new x and its binary representation to each row
         for i, row in enumerate(table_data):
-            row.append(x_new_column[i])
-            row.append(x_bin_column[i])
+            row.append(x_selection[i])
+            row.append(x_bin_selection[i])
 
-        # Show the updated table with new columns
         show_table(table_data)
 
     except ValueError:
@@ -186,7 +177,7 @@ button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
 # table interface
-columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "new x", "x(bin)"]
+columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "selected x", "x(bin)"]
 table = ttk.Treeview(root, columns=columns, show="headings")
 table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
@@ -197,7 +188,7 @@ table.column("g(x)", width=80)
 table.column("p", width=80)
 table.column("q", width=80)
 table.column("r", width=80)
-table.column("new x", width=80)
+table.column("selected x", width=80)
 table.column("x(bin)", width=100)
 
 for col in columns:
