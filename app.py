@@ -123,6 +123,24 @@ def calculate():
             row.append(x_selection[i])
             row.append(x_bin_selection[i])
 
+        r2_values = []
+        for row in table_data:
+            r2_value = round(random.uniform(0, 1), xx)
+            r2_values.append(r2_value)
+            row.append(r2_value)
+
+        pk = float(entry_pk.get())
+        if 0 >= pk or pk >= 1:
+            messagebox.showerror("Błąd", "pk musi zawierać się w przedziale (0; 1)")
+            return
+        
+        for row in table_data:
+            if row[8] <= pk:
+                parent = row[6]
+                row.append(parent)
+            else:
+                row.append('nan')
+
         show_table(table_data)
 
     except ValueError:
@@ -149,15 +167,21 @@ entry_a.grid(row=0, column=1, sticky='w', padx=5, pady=5)
 
 # input b
 label_b = tk.Label(root, text="Podaj b:")
-label_b.grid(row=1, column=0, sticky='w', padx=5, pady=5)
+label_b.grid(row=0, column=2, sticky='w', padx=5, pady=5)
 entry_b = tk.Entry(root, width=10)
-entry_b.grid(row=1, column=1, sticky='w', padx=5, pady=5)
+entry_b.grid(row=0, column=3, sticky='w', padx=5, pady=5)
 
 # input N
 label_N = tk.Label(root, text="Podaj N:")
-label_N.grid(row=2, column=0, sticky='w', padx=5, pady=5)
+label_N.grid(row=1, column=0, sticky='w', padx=5, pady=5)
 entry_N = tk.Entry(root, width=10)
-entry_N.grid(row=2, column=1, sticky='w', padx=5, pady=5)
+entry_N.grid(row=1, column=1, sticky='w', padx=5, pady=5)
+
+# input pk
+label_pk = tk.Label(root, text="Podaj pk:")
+label_pk.grid(row=1, column=2, sticky='w', padx=5, pady=5)
+entry_pk = tk.Entry(root, width=10)
+entry_pk.grid(row=1, column=3, sticky='w', padx=5, pady=5)
 
 # input d
 dictD = {
@@ -177,7 +201,7 @@ button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
 # table interface
-columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "selected x", "x(bin)"]
+columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "selected x", "x(bin)", "r2", "parent"]
 table = ttk.Treeview(root, columns=columns, show="headings")
 table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
@@ -185,11 +209,13 @@ table.column("L.P.", width=40)
 table.column("x(real)", width=80)
 table.column("f(x)", width=80)
 table.column("g(x)", width=80)
-table.column("p", width=80)
-table.column("q", width=80)
-table.column("r", width=80)
+table.column("p", width=60)
+table.column("q", width=60)
+table.column("r", width=60)
 table.column("selected x", width=80)
 table.column("x(bin)", width=100)
+table.column("r2", width=60)
+table.column("parent", width=80)
 
 for col in columns:
     table.heading(col, text=col)
