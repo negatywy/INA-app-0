@@ -130,8 +130,8 @@ def calculate():
             row.append(r2_value)
 
         pk = float(entry_pk.get())
-        if 0 >= pk or pk >= 1:
-            messagebox.showerror("Błąd", "pk musi zawierać się w przedziale (0; 1)")
+        if 0 > pk or pk > 1:
+            messagebox.showerror("Błąd", "pk musi zawierać się w przedziale [0; 1]")
             return
         
         for row in table_data:
@@ -140,6 +140,13 @@ def calculate():
                 row.append(parent)
             else:
                 row.append('nan')
+        
+        l = math.ceil(math.log2((b - a) / d + 1))
+        pc_values = []
+        for row in table_data:
+            pc = int(random.uniform(1, l - 1))
+            pc_values.append(pc)
+            row.append(pc)
 
         show_table(table_data)
 
@@ -201,7 +208,7 @@ button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
 # table interface
-columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "selected x", "x(bin)", "r2", "parent"]
+columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "selected x", "x(bin)", "r2", "parent", "pc"]
 table = ttk.Treeview(root, columns=columns, show="headings")
 table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
@@ -216,6 +223,7 @@ table.column("selected x", width=80)
 table.column("x(bin)", width=100)
 table.column("r2", width=60)
 table.column("parent", width=80)
+table.column("pc", width=80)
 
 for col in columns:
     table.heading(col, text=col)
