@@ -163,14 +163,34 @@ def calculate():
             else:
                 row.append('nan')
 
-        # binaries = []
-        # for row in table_data:
-        #     if (row[9] != 'nan'):
-        #         binary = row[7]
-        #     else:
-        #         binary = 'nan'
-        #     binaries.append(binary)
-        #     row.append(binary)
+        # Perform crossover and generate children binary strings
+        children_binaries = []
+        for i in range(0, len(parents), 2):
+            parent1_bin = str(table_data[i][7])  # Binary of first parent
+            parent2_bin = str(table_data[i+1][7])  # Binary of second parent
+            pc_value = table_data[i][10]  # Crossover point from pc_values
+
+            if pc != 'nan':
+                pc = int(pc_value)
+                child1_bin = parent1_bin[:pc] + parent2_bin[pc:]
+                child2_bin = parent2_bin[:pc] + parent1_bin[pc:]
+            else:
+                # If no crossover point, just use parent binaries
+                child1_bin = parent1_bin
+                child2_bin = parent2_bin
+
+            children_binaries.append(child1_bin)
+            children_binaries.append(child2_bin)
+
+        # Append child binary strings to table_data
+        child_index = 0
+        for row in table_data:
+            if (row[9] != 'nan'):  # If there is a parent
+                row.append(children_binaries[child_index])  # Append child binary
+                print(child_index)
+                child_index += 1
+            else:
+                row.append('nan')  # No child if no parent
 
         show_table(table_data)
 
@@ -232,7 +252,7 @@ button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
 # table interface
-columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "selected x", "x(bin)", "r2", "parent", "pc"]
+columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "selected x", "x(bin)", "r2", "parent", "pc", "child"]
 table = ttk.Treeview(root, columns=columns, show="headings")
 table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
@@ -248,7 +268,7 @@ table.column("x(bin)", width=100)
 table.column("r2", width=60)
 table.column("parent", width=80)
 table.column("pc", width=60)
-# table.column("child", width=80)
+table.column("child", width=80)
 
 for col in columns:
     table.heading(col, text=col)
