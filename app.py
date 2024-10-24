@@ -142,11 +142,35 @@ def calculate():
                 row.append('nan')
         
         l = math.ceil(math.log2((b - a) / d + 1))
+
+        parents = [row[9] for row in table_data if row[9] != 'nan']
+        if len(parents) % 2 != 0:
+            parents = parents[:-1]
         pc_values = []
-        for row in table_data:
+        for i in range(0, len(parents), 2):
             pc = int(random.uniform(1, l - 1))
             pc_values.append(pc)
-            row.append(pc)
+            pc_values.append(pc)
+
+        pc_index = 0
+        for row in table_data:
+            if row[9] != 'nan':
+                if pc_index < len(pc_values):
+                    row.append(pc_values[pc_index])
+                    pc_index += 1
+                else:
+                    row.append('nan')
+            else:
+                row.append('nan')
+
+        # binaries = []
+        # for row in table_data:
+        #     if (row[9] != 'nan'):
+        #         binary = row[7]
+        #     else:
+        #         binary = 'nan'
+        #     binaries.append(binary)
+        #     row.append(binary)
 
         show_table(table_data)
 
@@ -223,7 +247,8 @@ table.column("selected x", width=80)
 table.column("x(bin)", width=100)
 table.column("r2", width=60)
 table.column("parent", width=80)
-table.column("pc", width=80)
+table.column("pc", width=60)
+# table.column("child", width=80)
 
 for col in columns:
     table.heading(col, text=col)
