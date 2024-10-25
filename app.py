@@ -143,51 +143,46 @@ def calculate():
         
         l = math.ceil(math.log2((b - a) / d + 1))
 
-        parents = [row[9] for row in table_data if row[9] != 'nan']
-        if len(parents) % 2 != 0:
-            parents = parents[:-1]
+        # Filter rows with valid parents
+        parents_data = [row for row in table_data if row[9] != 'nan']
+        
+        # Ensure an even number of parents by removing the last if odd
+        if len(parents_data) % 2 != 0:
+            parents_data = parents_data[:-1]
+
+        # Generate crossover points for pairs of parents
         pc_values = []
-        for i in range(0, len(parents), 2):
+        for _ in range(0, len(parents_data), 2):
             pc = int(random.uniform(1, l - 1))
-            pc_values.append(pc)
-            pc_values.append(pc)
+            pc_values.extend([pc, pc])  # Same pc for each pair
 
         pc_index = 0
         for row in table_data:
-            if row[9] != 'nan':
-                if pc_index < len(pc_values):
-                    row.append(pc_values[pc_index])
-                    pc_index += 1
-                else:
-                    row.append('nan')
+            if row[9] != 'nan'and pc_index < len(pc_values):
+                row.append(pc_values[pc_index])
+                pc_index += 1
             else:
                 row.append('nan')
 
-        # Perform crossover and generate children binary strings
+        # Crossover to create children
         children_binaries = []
-        for i in range(0, len(parents), 2):
-            parent1_bin = str(table_data[i][7])  # Binary of first parent
-            parent2_bin = str(table_data[i+1][7])  # Binary of second parent
-            pc_value = table_data[i][10]  # Crossover point from pc_values
+        for i in range(0, len(parents_data), 2):
+            parent1_bin = str(parents_data[i][7])  # First parent's binary
+            parent2_bin = str(parents_data[i+1][7])  # Second parent's binary
+            pc = pc_values[i]  # Crossover point for this pair
 
-            if pc != 'nan':
-                pc = int(pc_value)
-                child1_bin = parent1_bin[:pc] + parent2_bin[pc:]
-                child2_bin = parent2_bin[:pc] + parent1_bin[pc:]
-            else:
-                # If no crossover point, just use parent binaries
-                child1_bin = parent1_bin
-                child2_bin = parent2_bin
+            # Perform crossover
+            child1_bin = parent1_bin[:pc] + parent2_bin[pc:]
+            child2_bin = parent2_bin[:pc] + parent1_bin[pc:]
 
             children_binaries.append(child1_bin)
             children_binaries.append(child2_bin)
 
-        # Append child binary strings to table_data
+        # Append child binary strings to the table_data
         child_index = 0
         for row in table_data:
-            if (row[9] != 'nan'):  # If there is a parent
-                row.append(children_binaries[child_index])  # Append child binary
-                print(child_index)
+            if row[9] != 'nan' and child_index < len(children_binaries):
+                row.append(children_binaries[child_index])
                 child_index += 1
             else:
                 row.append('nan')  # No child if no parent
