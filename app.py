@@ -143,18 +143,14 @@ def calculate():
         
         l = math.ceil(math.log2((b - a) / d + 1))
 
-        # Filter rows with valid parents
         parents_data = [row for row in table_data if row[9] != 'nan']
-        
-        # Ensure an even number of parents by removing the last if odd
         if len(parents_data) % 2 != 0:
             parents_data = parents_data[:-1]
 
-        # Generate crossover points for pairs of parents
         pc_values = []
         for _ in range(0, len(parents_data), 2):
             pc = int(random.uniform(1, l - 1))
-            pc_values.extend([pc, pc])  # Same pc for each pair
+            pc_values.extend([pc, pc])
 
         pc_index = 0
         for row in table_data:
@@ -164,28 +160,31 @@ def calculate():
             else:
                 row.append('nan')
 
-        # Crossover to create children
         children_binaries = []
         for i in range(0, len(parents_data), 2):
-            parent1_bin = str(parents_data[i][7])  # First parent's binary
-            parent2_bin = str(parents_data[i+1][7])  # Second parent's binary
-            pc = pc_values[i]  # Crossover point for this pair
+            parent1_bin = str(parents_data[i][7])
+            parent2_bin = str(parents_data[i+1][7])
+            pc = pc_values[i]
 
-            # Perform crossover
             child1_bin = parent1_bin[:pc] + parent2_bin[pc:]
             child2_bin = parent2_bin[:pc] + parent1_bin[pc:]
 
             children_binaries.append(child1_bin)
             children_binaries.append(child2_bin)
 
-        # Append child binary strings to the table_data
         child_index = 0
         for row in table_data:
             if row[9] != 'nan' and child_index < len(children_binaries):
                 row.append(children_binaries[child_index])
                 child_index += 1
             else:
-                row.append('nan')  # No child if no parent
+                row.append('nan')
+        
+        for row in table_data:
+            if row[10] != 'nan':
+                row.append(row[11])
+            else:
+                row.append(row[7])
 
         show_table(table_data)
 
@@ -247,23 +246,24 @@ button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
 # table interface
-columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "selected x", "x(bin)", "r2", "parent", "pc", "child"]
+columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "x sel", "x(bin)", "r2", "parent", "pc", "child", "new gen"]
 table = ttk.Treeview(root, columns=columns, show="headings")
 table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
 table.column("L.P.", width=40)
 table.column("x(real)", width=80)
-table.column("f(x)", width=80)
-table.column("g(x)", width=80)
+table.column("f(x)", width=60)
+table.column("g(x)", width=60)
 table.column("p", width=60)
 table.column("q", width=60)
 table.column("r", width=60)
-table.column("selected x", width=80)
+table.column("x sel", width=60)
 table.column("x(bin)", width=100)
 table.column("r2", width=60)
 table.column("parent", width=80)
 table.column("pc", width=60)
 table.column("child", width=80)
+table.column("new gen", width=80)
 
 for col in columns:
     table.heading(col, text=col)
