@@ -85,7 +85,7 @@ def calculate():
         g_sum = sum([row[2] for row in table_data]) 
 
         for row in table_data:
-            row.append(round(row[2] / g_sum, xx))
+            row.append(round(row[2] / g_sum, 2))
 
         q_values = []
         q_sum = 0
@@ -98,11 +98,11 @@ def calculate():
         q_values[-1] = 1.0
 
         for i, row in enumerate(table_data):
-            row.append(round(q_values[i], xx))
+            row.append(round(q_values[i], 2))
 
         r_values = []
         for row in table_data:
-            r_value = round(random.uniform(0, 1), xx)
+            r_value = round(random.uniform(0, 1), 2)
             r_values.append(r_value)
             row.append(r_value)
 
@@ -125,7 +125,7 @@ def calculate():
 
         r2_values = []
         for row in table_data:
-            r2_value = round(random.uniform(0, 1), xx)
+            r2_value = round(random.uniform(0, 1), 2)
             r2_values.append(r2_value)
             row.append(r2_value)
 
@@ -136,7 +136,7 @@ def calculate():
         
         for row in table_data:
             if row[8] <= pk:
-                parent = row[6]
+                parent = row[7]
                 row.append(parent)
             else:
                 row.append('nan')
@@ -251,17 +251,17 @@ table = ttk.Treeview(root, columns=columns, show="headings")
 table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
 table.column("L.P.", width=40)
-table.column("x(real)", width=80)
+table.column("x(real)", width=60)
 table.column("f(x)", width=60)
 table.column("g(x)", width=60)
-table.column("p", width=60)
-table.column("q", width=60)
-table.column("r", width=60)
+table.column("p", width=40)
+table.column("q", width=40)
+table.column("r", width=40)
 table.column("x sel", width=60)
 table.column("x(bin)", width=100)
-table.column("r2", width=60)
+table.column("r2", width=40)
 table.column("parent", width=80)
-table.column("pc", width=60)
+table.column("pc", width=40)
 table.column("child", width=80)
 table.column("new gen", width=80)
 
