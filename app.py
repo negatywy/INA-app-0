@@ -9,6 +9,11 @@ def real_to_bin(a, b, x_real, d):
     int_to_bin = bin(int(round(real_to_int)))[2:].zfill(l)
     return int_to_bin
 
+def bin_to_real(a, b, x_bin, xx, l):
+    bin_to_int = int(x_bin, 2)
+    int_to_real = bin_to_int*(b-a)/(2**l - 1) + a
+    return round(int_to_real, xx)
+
 def f_x(x_real):
     return -(x_real + 1) * (x_real - 1) * (x_real - 2)
 
@@ -32,7 +37,7 @@ def max_f_x(a, b, d):
         x += d
     return max
 
-def g_x(x_real, a, b, d, max=True):
+def g_x(x_real, a, b, d, max=True): 
     if max:
         g = f_x(x_real) - min_f_x(a, b, d) + d
     else:
@@ -145,6 +150,13 @@ def crossing(table_data, l):
         else:
             row.append(row[7])
 
+def mutate(x_bin, i):
+    new_bit = "1" if x_bin[i] == "0" else "0"
+    mutated = list(x_bin)
+    mutated[i] = new_bit
+    mutated_str = ''.join(mutated)
+    return mutated_str
+
 # obliczenie wartości dla losowych argumentów
 def calculate():
     try:
@@ -190,7 +202,21 @@ def calculate():
         selection(table_data, q_values, a, b, d, pk)
         crossing(table_data, l)
 
-
+        for row in table_data:
+            for i in range(l):
+                r_value = round(random.uniform(0, 1), 2)
+                x_bin = row[12]
+                if r_value < pm:
+                    gene = i+1      # if row != empty doklejać do niego kolejne punkty po przecinku
+                    x_bin = mutate(x_bin, i)
+                elif i == l-1:
+                    gene = 'nan'
+            row.append(gene)
+            row.append(x_bin)
+            x_real = bin_to_real(a, b, x_bin, xx, l)
+            row.append(x_real)
+            fx = round(f_x(x_real), xx)
+            row.append(fx)
 
         show_table(table_data)
 
@@ -258,7 +284,7 @@ button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
 # table interface
-columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "x sel", "x(bin)", "r2", "parent", "pc", "child", "new gen"]
+columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "x sel", "x(bin)", "r2", "parent", "pc", "child", "new gen", "gene", "x(bin)m", "x(real)m", "f(x)2"]
 table = ttk.Treeview(root, columns=columns, show="headings")
 table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
@@ -276,6 +302,10 @@ table.column("parent", width=80)
 table.column("pc", width=40)
 table.column("child", width=80)
 table.column("new gen", width=80)
+table.column("gene", width=40)
+table.column("x(bin)m", width=100)
+table.column("x(real)m", width=60)
+table.column("f(x)2", width=60)
 
 for col in columns:
     table.heading(col, text=col)
