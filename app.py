@@ -85,7 +85,7 @@ def calculate():
         g_sum = sum([row[2] for row in table_data]) 
 
         for row in table_data:
-            row.append(round(row[2] / g_sum, xx))
+            row.append(round(row[2] / g_sum, 2))
 
         q_values = []
         q_sum = 0
@@ -98,11 +98,11 @@ def calculate():
         q_values[-1] = 1.0
 
         for i, row in enumerate(table_data):
-            row.append(round(q_values[i], xx))
+            row.append(round(q_values[i], 2))
 
         r_values = []
         for row in table_data:
-            r_value = round(random.uniform(0, 1), xx)
+            r_value = round(random.uniform(0, 1), 2)
             r_values.append(r_value)
             row.append(r_value)
 
@@ -122,6 +122,69 @@ def calculate():
         for i, row in enumerate(table_data):
             row.append(x_selection[i])
             row.append(x_bin_selection[i])
+
+        r2_values = []
+        for row in table_data:
+            r2_value = round(random.uniform(0, 1), 2)
+            r2_values.append(r2_value)
+            row.append(r2_value)
+
+        pk = float(entry_pk.get())
+        if 0 > pk or pk > 1:
+            messagebox.showerror("Błąd", "pk musi zawierać się w przedziale [0; 1]")
+            return
+        
+        for row in table_data:
+            if row[8] <= pk:
+                parent = row[7]
+                row.append(parent)
+            else:
+                row.append('nan')
+        
+        l = math.ceil(math.log2((b - a) / d + 1))
+
+        parents_data = [row for row in table_data if row[9] != 'nan']
+        if len(parents_data) % 2 != 0:
+            parents_data = parents_data[:-1]
+
+        pc_values = []
+        for _ in range(0, len(parents_data), 2):
+            pc = int(random.uniform(1, l - 1))
+            pc_values.extend([pc, pc])
+
+        pc_index = 0
+        for row in table_data:
+            if row[9] != 'nan'and pc_index < len(pc_values):
+                row.append(pc_values[pc_index])
+                pc_index += 1
+            else:
+                row.append('nan')
+
+        children_binaries = []
+        for i in range(0, len(parents_data), 2):
+            parent1_bin = str(parents_data[i][7])
+            parent2_bin = str(parents_data[i+1][7])
+            pc = pc_values[i]
+
+            child1_bin = parent1_bin[:pc] + parent2_bin[pc:]
+            child2_bin = parent2_bin[:pc] + parent1_bin[pc:]
+
+            children_binaries.append(child1_bin)
+            children_binaries.append(child2_bin)
+
+        child_index = 0
+        for row in table_data:
+            if row[9] != 'nan' and child_index < len(children_binaries):
+                row.append(children_binaries[child_index])
+                child_index += 1
+            else:
+                row.append('nan')
+        
+        for row in table_data:
+            if row[10] != 'nan':
+                row.append(row[11])
+            else:
+                row.append(row[7])
 
         show_table(table_data)
 
@@ -149,15 +212,21 @@ entry_a.grid(row=0, column=1, sticky='w', padx=5, pady=5)
 
 # input b
 label_b = tk.Label(root, text="Podaj b:")
-label_b.grid(row=1, column=0, sticky='w', padx=5, pady=5)
+label_b.grid(row=0, column=2, sticky='w', padx=5, pady=5)
 entry_b = tk.Entry(root, width=10)
-entry_b.grid(row=1, column=1, sticky='w', padx=5, pady=5)
+entry_b.grid(row=0, column=3, sticky='w', padx=5, pady=5)
 
 # input N
 label_N = tk.Label(root, text="Podaj N:")
-label_N.grid(row=2, column=0, sticky='w', padx=5, pady=5)
+label_N.grid(row=1, column=0, sticky='w', padx=5, pady=5)
 entry_N = tk.Entry(root, width=10)
-entry_N.grid(row=2, column=1, sticky='w', padx=5, pady=5)
+entry_N.grid(row=1, column=1, sticky='w', padx=5, pady=5)
+
+# input pk
+label_pk = tk.Label(root, text="Podaj pk:")
+label_pk.grid(row=1, column=2, sticky='w', padx=5, pady=5)
+entry_pk = tk.Entry(root, width=10)
+entry_pk.grid(row=1, column=3, sticky='w', padx=5, pady=5)
 
 # input d
 dictD = {
@@ -177,19 +246,24 @@ button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=4, columnspan=2, padx=5, pady=10)
 
 # table interface
-columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "selected x", "x(bin)"]
+columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "x sel", "x(bin)", "r2", "parent", "pc", "child", "new gen"]
 table = ttk.Treeview(root, columns=columns, show="headings")
 table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
 
 table.column("L.P.", width=40)
-table.column("x(real)", width=80)
-table.column("f(x)", width=80)
-table.column("g(x)", width=80)
-table.column("p", width=80)
-table.column("q", width=80)
-table.column("r", width=80)
-table.column("selected x", width=80)
+table.column("x(real)", width=60)
+table.column("f(x)", width=60)
+table.column("g(x)", width=60)
+table.column("p", width=40)
+table.column("q", width=40)
+table.column("r", width=40)
+table.column("x sel", width=60)
 table.column("x(bin)", width=100)
+table.column("r2", width=40)
+table.column("parent", width=80)
+table.column("pc", width=40)
+table.column("child", width=80)
+table.column("new gen", width=80)
 
 for col in columns:
     table.heading(col, text=col)
