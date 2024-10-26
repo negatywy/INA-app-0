@@ -94,7 +94,6 @@ def calculate():
             q_sum += p_value
             q_values.append(q_sum)
 
-        # fix for the rounding error
         q_values[-1] = 1.0
 
         for i, row in enumerate(table_data):
@@ -186,6 +185,11 @@ def calculate():
             else:
                 row.append(row[7])
 
+        pm = float(entry_pm.get())
+        if 0 > pm or pm > 1:
+            messagebox.showerror("Błąd", "pm musi zawierać się w przedziale [0; 1]")
+            return
+
         show_table(table_data)
 
     except ValueError:
@@ -240,6 +244,12 @@ label_d.grid(row=3, column=0, sticky='w', padx=5, pady=5)
 combobox_d = ttk.Combobox(root, values=[0.1, 0.01, 0.001, 0.0001])
 combobox_d.grid(row=3, column=1, sticky='w', padx=5, pady=5)
 combobox_d.current(0)
+
+# input pm
+label_pm = tk.Label(root, text="Podaj pm:")
+label_pm.grid(row=3, column=2, sticky='w', padx=5, pady=5)
+entry_pm = tk.Entry(root, width=10)
+entry_pm.grid(row=3, column=3, sticky='w', padx=5, pady=5)
 
 # button
 button = tk.Button(root, text="Oblicz", command=calculate)
