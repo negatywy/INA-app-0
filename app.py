@@ -189,7 +189,7 @@ def calculate():
 
         N = int(entry_N.get())
         d = float(combobox_d.get())
-        xx = dictD[combobox_d.get()] + 1
+        xx = dictD[combobox_d.get()]
         l = math.ceil(math.log2((b - a) / d + 1))
 
         pk = float(entry_pk.get())
@@ -287,12 +287,12 @@ entry_pm.grid(row=3, column=3, sticky='w', padx=5, pady=5)
 
 # button
 button = tk.Button(root, text="Oblicz", command=calculate)
-button.grid(row=4, columnspan=2, padx=5, pady=10)
+button.grid(row=4, columnspan=2, padx=10, pady=10)
 
 # table interface
-columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "x sel", "x(bin)", "r2", "parent", "pc", "child", "new gen", "gene", "x(bin)m", "x(real)m", "f(x)2"]
-table = ttk.Treeview(root, columns=columns, show="headings")
-table.grid(row=5, column=0, columnspan=2, padx=5, pady=10)
+columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "x sel", "x(bin)", "r2", "parent", "pc", "child", "new gen", "gene", "x(bin)2", "x(real)2", "f(x)2"]
+table = ttk.Treeview(root, columns=columns, show="headings", height=20)
+table.grid(row=5, column=0, columnspan=6, padx=5, pady=10)
 
 table.column("L.P.", width=40)
 table.column("x(real)", width=60)
@@ -302,15 +302,15 @@ table.column("p", width=40)
 table.column("q", width=40)
 table.column("r", width=40)
 table.column("x sel", width=60)
-table.column("x(bin)", width=100)
+table.column("x(bin)", width=110)
 table.column("r2", width=40)
-table.column("parent", width=80)
+table.column("parent", width=110)
 table.column("pc", width=40)
-table.column("child", width=80)
-table.column("new gen", width=80)
-table.column("gene", width=40)
-table.column("x(bin)m", width=100)
-table.column("x(real)m", width=60)
+table.column("child", width=110)
+table.column("new gen", width=110)
+table.column("gene", width=60)
+table.column("x(bin)2", width=110)
+table.column("x(real)2", width=60)
 table.column("f(x)2", width=60)
 
 for col in columns:
