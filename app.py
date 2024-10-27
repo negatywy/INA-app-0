@@ -96,7 +96,7 @@ def selection(table_data, q_values, a, b, d, pk):
             parent = row[7]
             row.append(parent)
         else:
-            row.append('nan')
+            row.append('-')
 
 def generate_r(table_data):
     r_values = []
@@ -107,7 +107,7 @@ def generate_r(table_data):
     return r_values
 
 def crossing(table_data, l):
-    parents = [row for row in table_data if row[9] != 'nan']
+    parents = [row for row in table_data if row[9] != '-']
     if len(parents) % 2 != 0:
          parents = parents[:-1]
 
@@ -118,11 +118,11 @@ def crossing(table_data, l):
 
     pc_index = 0
     for row in table_data:
-        if row[9] != 'nan'and pc_index < len(pc_values):
+        if row[9] != '-'and pc_index < len(pc_values):
             row.append(pc_values[pc_index])
             pc_index += 1
         else:
-            row.append('nan')
+            row.append('-')
 
     children = []
     for i in range(0, len(parents), 2):
@@ -138,14 +138,14 @@ def crossing(table_data, l):
 
     child_index = 0
     for row in table_data:
-        if row[9] != 'nan' and child_index < len(children):
+        if row[9] != '-' and child_index < len(children):
             row.append(children[child_index])
             child_index += 1
         else:
-            row.append('nan')
+            row.append('-')
         
     for row in table_data:
-        if row[10] != 'nan':
+        if row[10] != '-':
             row.append(row[11])
         else:
             row.append(row[7])
@@ -156,6 +156,27 @@ def mutate(x_bin, i):
     mutated[i] = new_bit
     mutated_str = ''.join(mutated)
     return mutated_str
+
+def mutation(table_data, l, pm, a, b, xx):
+    for row in table_data:
+        gene = -1
+        x_bin = row[12]
+        for i in range(l):
+            r_value = round(random.uniform(0, 1), 5)
+            if r_value <= pm:
+                if gene == -1:
+                    gene = i+1
+                else:
+                    gene = str(gene) + ', ' + str(i+1)
+                x_bin = mutate(x_bin, i)
+            elif gene == -1 and i == l-1:
+                gene = '-'
+        row.append(gene)
+        row.append(x_bin)
+        x_real = bin_to_real(a, b, x_bin, xx, l)
+        row.append(x_real)
+        fx = round(f_x(x_real), xx)
+        row.append(fx)
 
 # obliczenie wartości dla losowych argumentów
 def calculate():
@@ -201,22 +222,7 @@ def calculate():
 
         selection(table_data, q_values, a, b, d, pk)
         crossing(table_data, l)
-
-        for row in table_data:
-            for i in range(l):
-                r_value = round(random.uniform(0, 1), 2)
-                x_bin = row[12]
-                if r_value < pm:
-                    gene = i+1      # if row != empty doklejać do niego kolejne punkty po przecinku
-                    x_bin = mutate(x_bin, i)
-                elif i == l-1:
-                    gene = 'nan'
-            row.append(gene)
-            row.append(x_bin)
-            x_real = bin_to_real(a, b, x_bin, xx, l)
-            row.append(x_real)
-            fx = round(f_x(x_real), xx)
-            row.append(fx)
+        mutation(table_data, l, pm, a, b, xx)
 
         show_table(table_data)
 
