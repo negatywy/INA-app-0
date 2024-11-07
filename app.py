@@ -15,7 +15,7 @@ def bin_to_real(a, b, x_bin, xx, l):
     return round(int_to_real, xx)
 
 def f_x(x_real):
-    return -(x_real + 1) * (x_real - 1) * (x_real - 2)
+    return (x_real * (math.cos( 20 * math.pi * x_real)) - math.sin(x_real))
 
 def min_f_x(a, b, d):
     min = f_x(a)
