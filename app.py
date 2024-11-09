@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import math
 import random
+import numpy as np
 
 def real_to_bin(a, b, x_real, d):
     l = math.ceil(math.log2((b - a) / d + 1))
@@ -15,41 +16,44 @@ def bin_to_real(a, b, x_bin, xx, l):
     return round(int_to_real, xx)
 
 def f_x(x_real):
-    return (x_real * (math.cos( 20 * math.pi * x_real)) - math.sin(x_real))
+    return (x_real % 1) * (np.cos(20 * np.pi * x_real) - np.sin(x_real))
 
-def min_f_x(a, b, d):
-    min = f_x(a)
-    x = a
-    while x <= b:
-        f = f_x(x)
-        if f < min:
-            min = f
-        x += d
-    return min
+# def min_f_x(a, b, d):
+#     min = f_x(a)
+#     x = a
+#     while x <= b:
+#         f = f_x(x)
+#         if f < min:
+#             min = f
+#         x += d
+#     return min
 
-def max_f_x(a, b, d):
-    max = f_x(a)
-    x = a
-    while x <= b:
-        f = f_x(x)
-        if f > max:
-            max = f
-        x += d
-    return max
+# def max_f_x(a, b, d):
+#     max = f_x(a)
+#     x = a
+#     while x <= b:
+#         f = f_x(x)
+#         if f > max:
+#             max = f
+#         x += d
+#     return max
 
-def g_x(x_real, a, b, d, max=True): 
-    if max:
-        g = f_x(x_real) - min_f_x(a, b, d) + d
-    else:
-        g = -(f_x(x_real) - max_f_x(a, b, d)) + d
+def g_x(x_real, a, b, d): 
+    step = int((b-a)/d)
+    x_values = np.linspace(a, b, step)
+    f_values = f_x(x_values)
+
+    min_value = np.min(f_values)
+    g = f_x(x_real) - min_value + d
     return g
 
 # Funkcja całościowa
 def functions(a, b, x, d):
     try:
         xx = dictD[combobox_d.get()]
-        f = f_x(x)
+        f = f_x(round(x, xx))
         g = g_x(x, a, b, d)
+        print("x: ", round(x, xx), "f: ", round(f, xx), "g: ", round(g, xx))
 
         return [
             round(x, xx),
@@ -189,7 +193,6 @@ def calculate():
             messagebox.showerror("Błąd", "Liczba pokoleń T musi być dodatnia")
             return
 
-        # Initialize table data
         a = int(entry_a.get())
         b = int(entry_b.get())
         N = int(entry_N.get())
@@ -199,7 +202,6 @@ def calculate():
         pk = float(entry_pk.get())
         pm = float(entry_pm.get())
 
-        # Generate initial population
         table_data = generate_table(a, b, N, d, 'nan')
         
         for j in range(T):
@@ -245,7 +247,7 @@ def show_table(results):
 
 # wygnenerowanie okienka
 root = tk.Tk()
-root.title("f(x)= x*cos(20π*x) – sin(x)")
+root.title("f(x)= x MOD 1 *cos(20π*x) – sin(x)")
 root.state('zoomed')
 
 # input a
