@@ -285,14 +285,27 @@ label_pm.grid(row=3, column=2, sticky='w', padx=5, pady=5)
 entry_pm = tk.Entry(root, width=10)
 entry_pm.grid(row=3, column=3, sticky='w', padx=5, pady=5)
 
+# input T
+label_T = tk.Label(root, text="Podaj T:")
+label_T.grid(row=4, column=0, sticky='w', padx=5, pady=5)
+entry_T = tk.Entry(root, width=10)
+entry_T.grid(row=4, column=1, sticky='w', padx=5, pady=5)
+
+# elita
+elita = tk.BooleanVar(value=True)
+label_elita = tk.Label(root, text="Elita:")
+label_elita.grid(row=4, column=2, sticky='w', padx=5, pady=5)
+checkbox_elita = tk.Checkbutton(root, variable=elita)
+checkbox_elita.grid(row=4, column=3, sticky='w', padx=5, pady=5)
+
 # button
 button = tk.Button(root, text="Oblicz", command=calculate)
-button.grid(row=4, columnspan=2, padx=10, pady=10)
+button.grid(row=5, columnspan=2, padx=10, pady=10)
 
 # table interface
 columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "x sel", "x(bin)", "r2", "parent", "pc", "child", "new gen", "gene", "x(bin)2", "x(real)2", "f(x)2"]
 table = ttk.Treeview(root, columns=columns, show="headings", height=20)
-table.grid(row=5, column=0, columnspan=6, padx=5, pady=10)
+table.grid(row=6, column=0, columnspan=6, padx=5, pady=10)
 
 table.column("L.P.", width=40)
 table.column("x(real)", width=60)
