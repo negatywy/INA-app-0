@@ -60,12 +60,15 @@ def functions(a, b, x, d):
         return [float('nan')] * 3
 
 # wygenerowanie tabeli
-def generate_table(a, b, N, d):
+def generate_table(a, b, N, d, x_T):
     results = []
     xx = dictD[combobox_d.get()] + 1
 
-    for _ in range(N):
-        x = round(random.uniform(a, b), xx)
+    for i in range(N):
+        if x_T == 'nan':
+            x = round(random.uniform(a, b), xx)
+        else:
+            x = x_T[i]
         result = functions(a, b, x, d)
         results.append(result)
 
@@ -181,49 +184,52 @@ def mutation(table_data, l, pm, a, b, xx):
 # obliczenie wartości dla losowych argumentów
 def calculate():
     try:
-        a = int(entry_a.get())
-        b = int(entry_b.get())
-        if a > b:
-            messagebox.showerror("Błąd", "Liczba a musi być mniejsza lub równa b")
+        T = int(entry_T.get())
+        if T <= 0:
+            messagebox.showerror("Błąd", "Liczba pokoleń T musi być dodatnia")
             return
 
+        # Initialize table data
+        a = int(entry_a.get())
+        b = int(entry_b.get())
         N = int(entry_N.get())
         d = float(combobox_d.get())
         xx = dictD[combobox_d.get()]
         l = math.ceil(math.log2((b - a) / d + 1))
-
         pk = float(entry_pk.get())
-        if 0 > pk or pk > 1:
-            messagebox.showerror("Błąd", "pk musi zawierać się w przedziale [0; 1]")
-            return
-
         pm = float(entry_pm.get())
-        if 0 > pm or pm > 1:
-            messagebox.showerror("Błąd", "pm musi zawierać się w przedziale [0; 1]")
-            return
 
-        table_data = generate_table(a, b, N, d)
-        show_table(table_data)
+        # Generate initial population
+        table_data = generate_table(a, b, N, d, 'nan')
+        
+        for j in range(T):
+            # Perform genetic algorithm operations
+            g_sum = sum([row[2] for row in table_data]) 
+            for row in table_data:
+                row.append(round(row[2] / g_sum, 2))
 
-        g_sum = sum([row[2] for row in table_data]) 
-        for row in table_data:
-            row.append(round(row[2] / g_sum, 2))
+            q_values = []
+            q_sum = 0
+            for row in table_data:
+                p_value = row[3]
+                q_sum += p_value
+                q_values.append(q_sum)
+            q_values[-1] = 1.0
 
-        q_values = []
-        q_sum = 0
-        for row in table_data:
-            p_value = row[3]
-            q_sum += p_value
-            q_values.append(q_sum)
-        q_values[-1] = 1.0
+            for i, row in enumerate(table_data):
+                row.append(round(q_values[i], 2))
 
-        for i, row in enumerate(table_data):
-            row.append(round(q_values[i], 2))
+            selection(table_data, q_values, a, b, d, pk)
+            crossing(table_data, l)
+            mutation(table_data, l, pm, a, b, xx)
 
-        selection(table_data, q_values, a, b, d, pk)
-        crossing(table_data, l)
-        mutation(table_data, l, pm, a, b, xx)
+            # Prepare x_T for the next iteration
+            x_T = [row[15] for row in table_data]
+            print(j)
+            print(x_T)
+            if j < (T-1): table_data = generate_table(a, b, N, d, x_T)
 
+        # Display final results
         show_table(table_data)
 
     except ValueError:
