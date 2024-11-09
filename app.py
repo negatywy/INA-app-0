@@ -205,7 +205,11 @@ def calculate():
         table_data = generate_table(a, b, N, d, 'nan')
         
         for j in range(T):
-            # Perform genetic algorithm operations
+            if elita.get():
+                table_data.sort(key=lambda row: row[1], reverse=True)
+                elite = table_data[0]
+                print("elita x: ", elite[0], "f(x): ", elite[1])
+
             g_sum = sum([row[2] for row in table_data]) 
             for row in table_data:
                 row.append(round(row[2] / g_sum, 2))
@@ -225,13 +229,17 @@ def calculate():
             crossing(table_data, l)
             mutation(table_data, l, pm, a, b, xx)
 
-            # Prepare x_T for the next iteration
+            if elita.get():
+                table_data.sort(key=lambda row: row[1], reverse=True)
+                if table_data[0][16] < elite[1]:
+                    table_data[-1] = elite
+                print("elita 2: ", elite[0], "f(x): ", elite[1])
+
             x_T = [row[15] for row in table_data]
             print(j)
             print(x_T)
             if j < (T-1): table_data = generate_table(a, b, N, d, x_T)
 
-        # Display final results
         show_table(table_data)
 
     except ValueError:
