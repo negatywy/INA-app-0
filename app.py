@@ -239,7 +239,7 @@ def show_table(results):
 
 # wygnenerowanie okienka
 root = tk.Tk()
-root.title("Laboratorium 2: f(x)= -(x+1)(x-1)(x-2)")
+root.title("f(x)= x*cos(20π*x) – sin(x)")
 root.state('zoomed')
 
 # input a
