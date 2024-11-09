@@ -18,26 +18,6 @@ def bin_to_real(a, b, x_bin, xx, l):
 def f_x(x_real):
     return (x_real % 1) * (np.cos(20 * np.pi * x_real) - np.sin(x_real))
 
-# def min_f_x(a, b, d):
-#     min = f_x(a)
-#     x = a
-#     while x <= b:
-#         f = f_x(x)
-#         if f < min:
-#             min = f
-#         x += d
-#     return min
-
-# def max_f_x(a, b, d):
-#     max = f_x(a)
-#     x = a
-#     while x <= b:
-#         f = f_x(x)
-#         if f > max:
-#             max = f
-#         x += d
-#     return max
-
 def g_x(x_real, a, b, d): 
     step = int((b-a)/d)
     x_values = np.linspace(a, b, step)
@@ -53,7 +33,6 @@ def functions(a, b, x, d):
         xx = dictD[combobox_d.get()]
         f = f_x(round(x, xx))
         g = g_x(x, a, b, d)
-        print("x: ", round(x, xx), "f: ", round(f, xx), "g: ", round(g, xx))
 
         return [
             round(x, xx),
@@ -78,10 +57,11 @@ def generate_table(a, b, N, d, x_T):
 
     return results
 
-def selection(table_data, q_values, a, b, d, pk):
+def selection(table_data, a, b, d, pk):
     r_values = generate_r(table_data)
     x_selection = []
     x_bin_selection = []
+    q_values = [row[4] for row in table_data]
 
     for i in range(len(table_data)):
         j = 0
@@ -205,7 +185,6 @@ def calculate():
         table_data = generate_table(a, b, N, d, 'nan')
         
         for j in range(T):
-            # Perform genetic algorithm operations
             g_sum = sum([row[2] for row in table_data]) 
             for row in table_data:
                 row.append(round(row[2] / g_sum, 2))
@@ -221,17 +200,29 @@ def calculate():
             for i, row in enumerate(table_data):
                 row.append(round(q_values[i], 2))
 
-            selection(table_data, q_values, a, b, d, pk)
+            elite = None
+            if elita.get():
+                table_data.sort(key=lambda row: row[1], reverse=True)
+                elite = table_data.pop(0)
+                print("elita x: ", elite[0], "f(x): ", elite[1])
+
+            print(f"Generation {j+1}, Length of table_data: {len(table_data)}")
+
+            selection(table_data, a, b, d, pk)
             crossing(table_data, l)
             mutation(table_data, l, pm, a, b, xx)
 
-            # Prepare x_T for the next iteration
+            if elite and len(elite) < len(table_data[0]):
+                elite.extend(['-'] * 9)
+                elite.append(real_to_bin(a, b, elite[0], d))
+                elite.append(elite[0])
+                elite.append(elite[1])
+                table_data.append(elite)
+
             x_T = [row[15] for row in table_data]
-            print(j)
             print(x_T)
             if j < (T-1): table_data = generate_table(a, b, N, d, x_T)
 
-        # Display final results
         show_table(table_data)
 
     except ValueError:
