@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import math
 import random
+import numpy as np
+import matplotlib.pyplot as plt
 
 def real_to_bin(a, b, x_real, d):
     l = math.ceil(math.log2((b - a) / d + 1))
@@ -15,40 +17,22 @@ def bin_to_real(a, b, x_bin, xx, l):
     return round(int_to_real, xx)
 
 def f_x(x_real):
-    return (x_real * (math.cos( 20 * math.pi * x_real)) - math.sin(x_real))
+    return (x_real % 1) * (np.cos(20 * np.pi * x_real) - np.sin(x_real))
 
-def min_f_x(a, b, d):
-    min = f_x(a)
-    x = a
-    while x <= b:
-        f = f_x(x)
-        if f < min:
-            min = f
-        x += d
-    return min
+def g_x(x_real, a, b, d): 
+    step = int((b-a)/d)
+    x_values = np.linspace(a, b, step)
+    f_values = f_x(x_values)
 
-def max_f_x(a, b, d):
-    max = f_x(a)
-    x = a
-    while x <= b:
-        f = f_x(x)
-        if f > max:
-            max = f
-        x += d
-    return max
-
-def g_x(x_real, a, b, d, max=True): 
-    if max:
-        g = f_x(x_real) - min_f_x(a, b, d) + d
-    else:
-        g = -(f_x(x_real) - max_f_x(a, b, d)) + d
+    min_value = np.min(f_values)
+    g = f_x(x_real) - min_value + d
     return g
 
 # Funkcja całościowa
 def functions(a, b, x, d):
     try:
         xx = dictD[combobox_d.get()]
-        f = f_x(x)
+        f = f_x(round(x, xx))
         g = g_x(x, a, b, d)
 
         return [
@@ -60,21 +44,25 @@ def functions(a, b, x, d):
         return [float('nan')] * 3
 
 # wygenerowanie tabeli
-def generate_table(a, b, N, d):
+def generate_table(a, b, N, d, x_T):
     results = []
     xx = dictD[combobox_d.get()] + 1
 
-    for _ in range(N):
-        x = round(random.uniform(a, b), xx)
+    for i in range(N):
+        if x_T == 'nan':
+            x = round(random.uniform(a, b), xx)
+        else:
+            x = x_T[i]
         result = functions(a, b, x, d)
         results.append(result)
 
     return results
 
-def selection(table_data, q_values, a, b, d, pk):
+def selection(table_data, a, b, d, pk):
     r_values = generate_r(table_data)
     x_selection = []
     x_bin_selection = []
+    q_values = [row[4] for row in table_data]
 
     for i in range(len(table_data)):
         j = 0
@@ -178,51 +166,90 @@ def mutation(table_data, l, pm, a, b, xx):
         fx = round(f_x(x_real), xx)
         row.append(fx)
 
+def calculate_summary(table_data, generation):
+    f_values = [row[1] for row in table_data]
+    min_f = min(f_values)
+    max_f = max(f_values)
+    avg_f = sum(f_values) / len(f_values)
+    return [generation, min_f, max_f, round(avg_f, 2)]
+
+def plot_summary(summary):
+    generations = [row[0] for row in summary]
+    min_values = [row[1] for row in summary]
+    max_values = [row[2] for row in summary]
+    avg_values = [row[3] for row in summary]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(generations, min_values, label='Min f(x)', marker='o')
+    plt.plot(generations, max_values, label='Max f(x)', marker='o')
+    plt.plot(generations, avg_values, label='Avg f(x)', marker='o')
+    
+    plt.xlabel('Pokolenie')
+    plt.ylabel('f(x)')
+    plt.title('Wykres podsumowujący wartości f(x) dla pokoleń')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
 # obliczenie wartości dla losowych argumentów
 def calculate():
     try:
-        a = int(entry_a.get())
-        b = int(entry_b.get())
-        if a > b:
-            messagebox.showerror("Błąd", "Liczba a musi być mniejsza lub równa b")
+        T = int(entry_T.get())
+        if T <= 0:
+            messagebox.showerror("Błąd", "Liczba pokoleń T musi być dodatnia")
             return
 
+        a = int(entry_a.get())
+        b = int(entry_b.get())
         N = int(entry_N.get())
         d = float(combobox_d.get())
         xx = dictD[combobox_d.get()]
         l = math.ceil(math.log2((b - a) / d + 1))
-
         pk = float(entry_pk.get())
-        if 0 > pk or pk > 1:
-            messagebox.showerror("Błąd", "pk musi zawierać się w przedziale [0; 1]")
-            return
-
         pm = float(entry_pm.get())
-        if 0 > pm or pm > 1:
-            messagebox.showerror("Błąd", "pm musi zawierać się w przedziale [0; 1]")
-            return
 
-        table_data = generate_table(a, b, N, d)
-        show_table(table_data)
+        table_data = generate_table(a, b, N, d, 'nan')
+        global summary
+        summary = []
+        
+        for j in range(T):
+            g_sum = sum([row[2] for row in table_data]) 
+            for row in table_data:
+                row.append(round(row[2] / g_sum, 2))
 
-        g_sum = sum([row[2] for row in table_data]) 
-        for row in table_data:
-            row.append(round(row[2] / g_sum, 2))
+            q_values = []
+            q_sum = 0
+            for row in table_data:
+                p_value = row[3]
+                q_sum += p_value
+                q_values.append(q_sum)
+            q_values[-1] = 1.0
 
-        q_values = []
-        q_sum = 0
-        for row in table_data:
-            p_value = row[3]
-            q_sum += p_value
-            q_values.append(q_sum)
-        q_values[-1] = 1.0
+            for i, row in enumerate(table_data):
+                row.append(round(q_values[i], 2))
 
-        for i, row in enumerate(table_data):
-            row.append(round(q_values[i], 2))
+            elite = None
+            if elita.get():
+                table_data.sort(key=lambda row: row[1], reverse=True)
+                elite = table_data[0]
 
-        selection(table_data, q_values, a, b, d, pk)
-        crossing(table_data, l)
-        mutation(table_data, l, pm, a, b, xx)
+            selection(table_data, a, b, d, pk)
+            crossing(table_data, l)
+            mutation(table_data, l, pm, a, b, xx)
+
+            if elita.get():
+                changed = int(random.uniform(0, N - 1))
+                while (table_data[changed][16] > elite[1]):
+                    changed = int(random.uniform(0, N - 1))
+                table_data[changed] = elite
+
+            x_T = [row[15] for row in table_data]
+            if j < (T-1): 
+                table_data = generate_table(a, b, N, d, x_T)
+
+            summary.append(calculate_summary(table_data, j + 1))
+            print("summary ", j+1, ": ")
+            print(summary)
 
         show_table(table_data)
 
@@ -230,16 +257,39 @@ def calculate():
         messagebox.showerror("Błąd", "Podano nieprawidłowe liczby")
 
 # wypełnianie tabeli
-def show_table(results):
+# def show_table(results):
+#     for row in table.get_children():
+#         table.delete(row)
+
+#     for index, entry in enumerate(results, start=1):
+#         table.insert("", "end", values=[index] + entry)
+
+def show_table(last_generation_data):
     for row in table.get_children():
         table.delete(row)
 
-    for index, entry in enumerate(results, start=1):
-        table.insert("", "end", values=[index] + entry)
+    counts = {}
+    for entry in last_generation_data:
+        x_real = round(entry[0], 5)
+        x_bin = entry[7]
+        f_x_value = entry[1]
+
+        if x_real not in counts:
+            counts[x_real] = {"count": 0, "x_bin": x_bin, "f_x_value": f_x_value}
+        counts[x_real]["count"] += 1
+
+    total_count = len(last_generation_data)
+
+    for index, (x_real, data) in enumerate(counts.items(), start=1):
+        x_bin = data["x_bin"]
+        f_x_value = data["f_x_value"]
+        percentage = (data["count"] / total_count) * 100
+
+        table.insert("", "end", values=[index, x_real, x_bin, f_x_value, f"{percentage:.2f}%"])
 
 # wygnenerowanie okienka
 root = tk.Tk()
-root.title("Laboratorium 2: f(x)= -(x+1)(x-1)(x-2)")
+root.title("f(x)= x MOD 1 *cos(20π*x) – sin(x)")
 root.state('zoomed')
 
 # input a
@@ -285,36 +335,65 @@ label_pm.grid(row=3, column=2, sticky='w', padx=5, pady=5)
 entry_pm = tk.Entry(root, width=10)
 entry_pm.grid(row=3, column=3, sticky='w', padx=5, pady=5)
 
-# button
+# input T
+label_T = tk.Label(root, text="Podaj T:")
+label_T.grid(row=4, column=0, sticky='w', padx=5, pady=5)
+entry_T = tk.Entry(root, width=10)
+entry_T.grid(row=4, column=1, sticky='w', padx=5, pady=5)
+
+# elita
+elita = tk.BooleanVar(value=True)
+label_elita = tk.Label(root, text="Elita:")
+label_elita.grid(row=4, column=2, sticky='w', padx=5, pady=5)
+checkbox_elita = tk.Checkbutton(root, variable=elita)
+checkbox_elita.grid(row=4, column=3, sticky='w', padx=5, pady=5)
+
+# buttons
 button = tk.Button(root, text="Oblicz", command=calculate)
-button.grid(row=4, columnspan=2, padx=10, pady=10)
+button.grid(row=5, columnspan=2, padx=10, pady=10)
+
+plot_button = tk.Button(root, text="Pokaż wykres", command=lambda: plot_summary(summary))
+plot_button.grid(row=5, column=2, padx=10, pady=10)
 
 # table interface
-columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "x sel", "x(bin)", "r2", "parent", "pc", "child", "new gen", "gene", "x(bin)2", "x(real)2", "f(x)2"]
-table = ttk.Treeview(root, columns=columns, show="headings", height=20)
-table.grid(row=5, column=0, columnspan=6, padx=5, pady=10)
+# columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "x sel", "x(bin)", "r2", "parent", "pc", "child", "new gen", "gene", "x(bin)2", "x(real)2", "f(x)2"]
+# table = ttk.Treeview(root, columns=columns, show="headings", height=20)
+# table.grid(row=6, column=0, columnspan=6, padx=5, pady=10)
 
+# table.column("L.P.", width=40)
+# table.column("x(real)", width=60)
+# table.column("f(x)", width=60)
+# table.column("g(x)", width=60)
+# table.column("p", width=40)
+# table.column("q", width=40)
+# table.column("r", width=40)
+# table.column("x sel", width=60)
+# table.column("x(bin)", width=110)
+# table.column("r2", width=40)
+# table.column("parent", width=110)
+# table.column("pc", width=40)
+# table.column("child", width=110)
+# table.column("new gen", width=110)
+# table.column("gene", width=60)
+# table.column("x(bin)2", width=110)
+# table.column("x(real)2", width=60)
+# table.column("f(x)2", width=60)
+
+# Updated table interface with count column
+columns = ["L.P.", "x(real)", "x(bin)", "f(x)", "Percentage"]
+table = ttk.Treeview(root, columns=columns, show="headings", height=20)
+table.grid(row=6, column=0, columnspan=6, padx=5, pady=10)
+
+# Update column widths and headings
 table.column("L.P.", width=40)
-table.column("x(real)", width=60)
-table.column("f(x)", width=60)
-table.column("g(x)", width=60)
-table.column("p", width=40)
-table.column("q", width=40)
-table.column("r", width=40)
-table.column("x sel", width=60)
+table.column("x(real)", width=80)
 table.column("x(bin)", width=110)
-table.column("r2", width=40)
-table.column("parent", width=110)
-table.column("pc", width=40)
-table.column("child", width=110)
-table.column("new gen", width=110)
-table.column("gene", width=60)
-table.column("x(bin)2", width=110)
-table.column("x(real)2", width=60)
-table.column("f(x)2", width=60)
+table.column("f(x)", width=80)
+table.column("Percentage", width=100)
 
 for col in columns:
     table.heading(col, text=col)
+
 
 # launch the app
 root.mainloop()
