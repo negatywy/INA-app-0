@@ -185,11 +185,6 @@ def calculate():
         table_data = generate_table(a, b, N, d, 'nan')
         
         for j in range(T):
-            if elita.get():
-                table_data.sort(key=lambda row: row[1], reverse=True)
-                elite = table_data[0]
-                print("elita x: ", elite[0], "f(x): ", elite[1])
-
             g_sum = sum([row[2] for row in table_data]) 
             for row in table_data:
                 row.append(round(row[2] / g_sum, 2))
@@ -208,19 +203,19 @@ def calculate():
             elite = None
             if elita.get():
                 table_data.sort(key=lambda row: row[1], reverse=True)
-                elite = table_data.pop(0)
+                elite = table_data[0]
                 print("elita x: ", elite[0], "f(x): ", elite[1])
-
-            print(f"Generation {j+1}, Length of table_data: {len(table_data)}")
 
             selection(table_data, a, b, d, pk)
             crossing(table_data, l)
             mutation(table_data, l, pm, a, b, xx)
 
             if elita.get():
-                table_data.sort(key=lambda row: row[1], reverse=True)
-                if table_data[0][16] < elite[1]:
-                    table_data[-1] = elite
+                changed = int(random.uniform(0, N - 1))
+                while (table_data[changed][16] > elite[1]):
+                    changed = int(random.uniform(0, N - 1))
+                print("zmieniony: ", table_data[changed][15], "f(x): ", table_data[changed][16])
+                table_data[changed] = elite
                 print("elita 2: ", elite[0], "f(x): ", elite[1])
 
             x_T = [row[15] for row in table_data]
