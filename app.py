@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 import math
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
 def real_to_bin(a, b, x_real, d):
     l = math.ceil(math.log2((b - a) / d + 1))
@@ -165,6 +166,31 @@ def mutation(table_data, l, pm, a, b, xx):
         fx = round(f_x(x_real), xx)
         row.append(fx)
 
+def calculate_summary(table_data, generation):
+    f_values = [row[1] for row in table_data]
+    min_f = min(f_values)
+    max_f = max(f_values)
+    avg_f = sum(f_values) / len(f_values)
+    return [generation, min_f, max_f, round(avg_f, 2)]
+
+def plot_summary(summary):
+    generations = [row[0] for row in summary]
+    min_values = [row[1] for row in summary]
+    max_values = [row[2] for row in summary]
+    avg_values = [row[3] for row in summary]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(generations, min_values, label='Min f(x)', marker='o')
+    plt.plot(generations, max_values, label='Max f(x)', marker='o')
+    plt.plot(generations, avg_values, label='Avg f(x)', marker='o')
+    
+    plt.xlabel('Pokolenie')
+    plt.ylabel('f(x)')
+    plt.title('Wykres podsumowujący wartości f(x) dla pokoleń')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
 # obliczenie wartości dla losowych argumentów
 def calculate():
     try:
@@ -183,6 +209,8 @@ def calculate():
         pm = float(entry_pm.get())
 
         table_data = generate_table(a, b, N, d, 'nan')
+        global summary
+        summary = []
         
         for j in range(T):
             g_sum = sum([row[2] for row in table_data]) 
@@ -204,7 +232,6 @@ def calculate():
             if elita.get():
                 table_data.sort(key=lambda row: row[1], reverse=True)
                 elite = table_data[0]
-                print("elita x: ", elite[0], "f(x): ", elite[1])
 
             selection(table_data, a, b, d, pk)
             crossing(table_data, l)
@@ -214,13 +241,15 @@ def calculate():
                 changed = int(random.uniform(0, N - 1))
                 while (table_data[changed][16] > elite[1]):
                     changed = int(random.uniform(0, N - 1))
-                print("zmieniony: ", table_data[changed][15], "f(x): ", table_data[changed][16])
                 table_data[changed] = elite
-                print("elita 2: ", elite[0], "f(x): ", elite[1])
 
             x_T = [row[15] for row in table_data]
-            print(x_T)
-            if j < (T-1): table_data = generate_table(a, b, N, d, x_T)
+            if j < (T-1): 
+                table_data = generate_table(a, b, N, d, x_T)
+
+            summary.append(calculate_summary(table_data, j + 1))
+            print("summary ", j+1, ": ")
+            print(summary)
 
         show_table(table_data)
 
@@ -296,9 +325,12 @@ label_elita.grid(row=4, column=2, sticky='w', padx=5, pady=5)
 checkbox_elita = tk.Checkbutton(root, variable=elita)
 checkbox_elita.grid(row=4, column=3, sticky='w', padx=5, pady=5)
 
-# button
+# buttons
 button = tk.Button(root, text="Oblicz", command=calculate)
 button.grid(row=5, columnspan=2, padx=10, pady=10)
+
+plot_button = tk.Button(root, text="Pokaż wykres", command=lambda: plot_summary(summary))
+plot_button.grid(row=5, column=2, padx=10, pady=10)
 
 # table interface
 columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "x sel", "x(bin)", "r2", "parent", "pc", "child", "new gen", "gene", "x(bin)2", "x(real)2", "f(x)2"]
