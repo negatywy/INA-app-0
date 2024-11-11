@@ -256,14 +256,6 @@ def calculate():
     except ValueError:
         messagebox.showerror("Błąd", "Podano nieprawidłowe liczby")
 
-# wypełnianie tabeli
-# def show_table(results):
-#     for row in table.get_children():
-#         table.delete(row)
-
-#     for index, entry in enumerate(results, start=1):
-#         table.insert("", "end", values=[index] + entry)
-
 def show_table(last_generation_data):
     for row in table.get_children():
         table.delete(row)
@@ -286,6 +278,54 @@ def show_table(last_generation_data):
         percentage = (data["count"] / total_count) * 100
 
         table.insert("", "end", values=[index, x_real, x_bin, f_x_value, f"{percentage:.2f}%"])
+
+def test():
+    a = -4
+    b = 12 
+    d = 0.001
+    xx = 3
+    l = math.ceil(math.log2((b - a) / d + 1))
+    N = [30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80]
+    pk = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9]
+    T = [50, 60, 70, 80, 90, 100]
+    pm = [0.0001, 0.0005, 0.001, 0.005, 0.01]
+
+    table_data = generate_table(a, b, N, d, 'nan')
+    
+    for j in range(T):
+        g_sum = sum([row[2] for row in table_data]) 
+        for row in table_data:
+            row.append(round(row[2] / g_sum, 2))
+
+        q_values = []
+        q_sum = 0
+        for row in table_data:
+            p_value = row[3]
+            q_sum += p_value
+            q_values.append(q_sum)
+        q_values[-1] = 1.0
+
+        for i, row in enumerate(table_data):
+            row.append(round(q_values[i], 2))
+
+        elite = None
+        if elita.get():
+            table_data.sort(key=lambda row: row[1], reverse=True)
+            elite = table_data[0]
+
+        selection(table_data, a, b, d, pk)
+        crossing(table_data, l)
+        mutation(table_data, l, pm, a, b, xx)
+
+        if elita.get():
+            changed = int(random.uniform(0, N - 1))
+            while (table_data[changed][16] > elite[1]):
+                changed = int(random.uniform(0, N - 1))
+            table_data[changed] = elite
+
+        x_T = [row[15] for row in table_data]
+        if j < (T-1): 
+             table_data = generate_table(a, b, N, d, x_T)
 
 # wygnenerowanie okienka
 root = tk.Tk()
@@ -355,36 +395,14 @@ button.grid(row=5, columnspan=2, padx=10, pady=10)
 plot_button = tk.Button(root, text="Pokaż wykres", command=lambda: plot_summary(summary))
 plot_button.grid(row=5, column=2, padx=10, pady=10)
 
-# table interface
-# columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "x sel", "x(bin)", "r2", "parent", "pc", "child", "new gen", "gene", "x(bin)2", "x(real)2", "f(x)2"]
-# table = ttk.Treeview(root, columns=columns, show="headings", height=20)
-# table.grid(row=6, column=0, columnspan=6, padx=5, pady=10)
+test_button = tk.Button(root, text="Testy", command=test)
+test_button.grid(row=5, column=5, padx=10, pady=10)
 
-# table.column("L.P.", width=40)
-# table.column("x(real)", width=60)
-# table.column("f(x)", width=60)
-# table.column("g(x)", width=60)
-# table.column("p", width=40)
-# table.column("q", width=40)
-# table.column("r", width=40)
-# table.column("x sel", width=60)
-# table.column("x(bin)", width=110)
-# table.column("r2", width=40)
-# table.column("parent", width=110)
-# table.column("pc", width=40)
-# table.column("child", width=110)
-# table.column("new gen", width=110)
-# table.column("gene", width=60)
-# table.column("x(bin)2", width=110)
-# table.column("x(real)2", width=60)
-# table.column("f(x)2", width=60)
-
-# Updated table interface with count column
+# table data
 columns = ["L.P.", "x(real)", "x(bin)", "f(x)", "Percentage"]
 table = ttk.Treeview(root, columns=columns, show="headings", height=20)
-table.grid(row=6, column=0, columnspan=6, padx=5, pady=10)
+table.grid(row=6, column=0, columnspan=3, padx=5, pady=10)
 
-# Update column widths and headings
 table.column("L.P.", width=40)
 table.column("x(real)", width=80)
 table.column("x(bin)", width=110)
@@ -394,6 +412,17 @@ table.column("Percentage", width=100)
 for col in columns:
     table.heading(col, text=col)
 
+# test table data
+test_columns = ["L.P.", "zbiór", "f avg(x)"]
+table_test = ttk.Treeview(root, columns=test_columns, show="headings", height=20)
+table_test.grid(row=6, column=4, columnspan=3, padx=5, pady=10)
+
+table_test.column("L.P.", width=50)
+table_test.column("zbiór", width=150)
+table_test.column("f avg(x)", width=100)
+
+for col in test_columns:
+    table_test.heading(col, text=col)
 
 # launch the app
 root.mainloop()
