@@ -4,6 +4,7 @@ import math
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+import itertools
 
 def real_to_bin(a, b, x_real, d):
     l = math.ceil(math.log2((b - a) / d + 1))
@@ -248,8 +249,6 @@ def calculate():
                 table_data = generate_table(a, b, N, d, x_T)
 
             summary.append(calculate_summary(table_data, j + 1))
-            print("summary ", j+1, ": ")
-            print(summary)
 
         show_table(table_data)
 
@@ -279,17 +278,7 @@ def show_table(last_generation_data):
 
         table.insert("", "end", values=[index, x_real, x_bin, f_x_value, f"{percentage:.2f}%"])
 
-def test():
-    a = -4
-    b = 12 
-    d = 0.001
-    xx = 3
-    l = math.ceil(math.log2((b - a) / d + 1))
-    N = [30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80]
-    pk = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9]
-    T = [50, 60, 70, 80, 90, 100]
-    pm = [0.0001, 0.0005, 0.001, 0.005, 0.01]
-
+def calc(a, b, d, xx, l, N, T, pk, pm):
     table_data = generate_table(a, b, N, d, 'nan')
     
     for j in range(T):
@@ -326,6 +315,37 @@ def test():
         x_T = [row[15] for row in table_data]
         if j < (T-1): 
              table_data = generate_table(a, b, N, d, x_T)
+    return table_data
+
+def test():
+    a = -4
+    b = 12 
+    d = 0.001
+    xx = 3
+    l = math.ceil(math.log2((b - a) / d + 1))
+    N = [30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80]
+    pk = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9]
+    T = [50, 60, 70, 80, 90, 100]
+    pm = [0.0001, 0.0005, 0.001, 0.005, 0.01]
+
+    test_cases = list(itertools.product(N, T, pk, pm))
+    results = []
+
+    for case in test_cases:
+        best_specimen = []
+        for i in range(100):
+            table_data = calc(a, b, d, xx, l, case[0], case[1], case[2], case[3])
+            best_one = max(row[16] for row in table_data)
+            best_specimen.append(best_one)
+        f_avg = sum(best_specimen) / len(best_specimen)
+
+        results.append((f_avg, case[1], case[0], case))
+    
+    results.sort(key=lambda x: (-x[0], x[1], x[2]))
+
+    for idx, (f_avg, T, N, case) in enumerate(results, start=1):
+        zbior_str = f"N={case[0]}, T={case[1]}, pk={case[2]}, pm={case[3]}"
+        table_test.insert("", "end", values=(idx, zbior_str, f_avg))
 
 # wygnenerowanie okienka
 root = tk.Tk()
