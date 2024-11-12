@@ -28,7 +28,6 @@ def g_x(x_real, a, b, d):
     g = f_x(x_real) - min_value + d
     return g
 
-# Funkcja całościowa
 def functions(a, b, x, d):
     try:
         xx = dictD[combobox_d.get()]
@@ -43,7 +42,6 @@ def functions(a, b, x, d):
     except ValueError:
         return [float('nan')] * 3
 
-# wygenerowanie tabeli
 def generate_table(a, b, N, d, x_T):
     results = []
     xx = dictD[combobox_d.get()] + 1
@@ -191,7 +189,6 @@ def plot_summary(summary):
     plt.grid(True)
     plt.show()
 
-# obliczenie wartości dla losowych argumentów
 def calculate():
     try:
         T = int(entry_T.get())
@@ -248,21 +245,11 @@ def calculate():
                 table_data = generate_table(a, b, N, d, x_T)
 
             summary.append(calculate_summary(table_data, j + 1))
-            print("summary ", j+1, ": ")
-            print(summary)
 
         show_table(table_data)
 
     except ValueError:
         messagebox.showerror("Błąd", "Podano nieprawidłowe liczby")
-
-# wypełnianie tabeli
-# def show_table(results):
-#     for row in table.get_children():
-#         table.delete(row)
-
-#     for index, entry in enumerate(results, start=1):
-#         table.insert("", "end", values=[index] + entry)
 
 def show_table(last_generation_data):
     for row in table.get_children():
@@ -355,36 +342,10 @@ button.grid(row=5, columnspan=2, padx=10, pady=10)
 plot_button = tk.Button(root, text="Pokaż wykres", command=lambda: plot_summary(summary))
 plot_button.grid(row=5, column=2, padx=10, pady=10)
 
-# table interface
-# columns = ["L.P.", "x(real)", "f(x)", "g(x)", "p", "q", "r", "x sel", "x(bin)", "r2", "parent", "pc", "child", "new gen", "gene", "x(bin)2", "x(real)2", "f(x)2"]
-# table = ttk.Treeview(root, columns=columns, show="headings", height=20)
-# table.grid(row=6, column=0, columnspan=6, padx=5, pady=10)
-
-# table.column("L.P.", width=40)
-# table.column("x(real)", width=60)
-# table.column("f(x)", width=60)
-# table.column("g(x)", width=60)
-# table.column("p", width=40)
-# table.column("q", width=40)
-# table.column("r", width=40)
-# table.column("x sel", width=60)
-# table.column("x(bin)", width=110)
-# table.column("r2", width=40)
-# table.column("parent", width=110)
-# table.column("pc", width=40)
-# table.column("child", width=110)
-# table.column("new gen", width=110)
-# table.column("gene", width=60)
-# table.column("x(bin)2", width=110)
-# table.column("x(real)2", width=60)
-# table.column("f(x)2", width=60)
-
-# Updated table interface with count column
 columns = ["L.P.", "x(real)", "x(bin)", "f(x)", "Percentage"]
 table = ttk.Treeview(root, columns=columns, show="headings", height=20)
 table.grid(row=6, column=0, columnspan=6, padx=5, pady=10)
 
-# Update column widths and headings
 table.column("L.P.", width=40)
 table.column("x(real)", width=80)
 table.column("x(bin)", width=110)
@@ -393,7 +354,6 @@ table.column("Percentage", width=100)
 
 for col in columns:
     table.heading(col, text=col)
-
 
 # launch the app
 root.mainloop()
