@@ -5,6 +5,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 import itertools
+import concurrent.futures
 
 def real_to_bin(a, b, x_real, d):
     l = math.ceil(math.log2((b - a) / d + 1))
@@ -317,7 +318,24 @@ def calc(a, b, d, xx, l, N, T, pk, pm):
              table_data = generate_table(a, b, N, d, x_T)
     return table_data
 
-def test():
+def run_test_case(case):
+    a = -4
+    b = 12 
+    d = 0.001
+    xx = 3
+    l = math.ceil(math.log2((b - a) / d + 1))
+    N, T, pk, pm = case
+    best_specimen = []
+    
+    for _ in range(100):
+        table_data = calc(a, b, d, xx, l, N, T, pk, pm)
+        best_one = max(row[16] for row in table_data)
+        best_specimen.append(best_one)
+    
+    f_avg = sum(best_specimen) / len(best_specimen)
+    return (f_avg, T, N, case)
+
+def parallel_test():
     a = -4
     b = 12 
     d = 0.001
@@ -329,20 +347,12 @@ def test():
     pm = [0.0001, 0.0005, 0.001, 0.005, 0.01]
 
     test_cases = list(itertools.product(N, T, pk, pm))
+
     results = []
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = list(executor.map(run_test_case, test_cases))
 
-    for case in test_cases:
-        best_specimen = []
-        for i in range(100):
-            table_data = calc(a, b, d, xx, l, case[0], case[1], case[2], case[3])
-            best_one = max(row[16] for row in table_data)
-            best_specimen.append(best_one)
-        f_avg = sum(best_specimen) / len(best_specimen)
-
-        results.append((f_avg, case[1], case[0], case))
-    
     results.sort(key=lambda x: (-x[0], x[1], x[2]))
-
     for idx, (f_avg, T, N, case) in enumerate(results, start=1):
         zbior_str = f"N={case[0]}, T={case[1]}, pk={case[2]}, pm={case[3]}"
         table_test.insert("", "end", values=(idx, zbior_str, f_avg))
@@ -415,7 +425,7 @@ button.grid(row=5, columnspan=2, padx=10, pady=10)
 plot_button = tk.Button(root, text="Pokaż wykres", command=lambda: plot_summary(summary))
 plot_button.grid(row=5, column=2, padx=10, pady=10)
 
-test_button = tk.Button(root, text="Testy", command=test)
+test_button = tk.Button(root, text="Testy", command=parallel_test)
 test_button.grid(row=5, column=5, padx=10, pady=10)
 
 # table data
