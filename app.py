@@ -327,16 +327,20 @@ def test():
     test_cases = list(itertools.product(N, T, pk, pm))
     random.shuffle(test_cases)
     results = []
-    i = 0
+    count = 0
 
-    for case in test_cases[:300]:
-        print(f"{i}. N={case[0]}, T={case[1]}, pk={case[2]}, pm={case[3]}")
-        i+=1
-        table_data = calc(a, b, d, xx, l, case[0], case[1], case[2], case[3])
-        best_specimen = max(row[16] for row in table_data)
-        f_avg = best_specimen
+    for case in test_cases[:100]:
+        count+=1
+        best_specimen = []
+        print(f"N={case[0]}, T={case[1]}, pk={case[2]}, pm={case[3]}")
+        for i in range(5):
+            print(f"{count}.{i} N={case[0]}, T={case[1]}, pk={case[2]}, pm={case[3]}")
+            table_data = calc(a, b, d, xx, l, case[0], case[1], case[2], case[3])
+            best_one = max(row[16] for row in table_data)
+            best_specimen.append(best_one)
+        f_avg = sum(best_specimen) / len(best_specimen)
 
-        results.append((f_avg, case[1], case[0], case))
+        results.append((round(f_avg, 2), case[1], case[0], case))
     return results
 
 def show_test():
