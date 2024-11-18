@@ -325,16 +325,16 @@ def test():
     pm = [0.0001, 0.0005, 0.001, 0.005, 0.01]
 
     test_cases = list(itertools.product(N, T, pk, pm))
+    random.shuffle(test_cases)
     results = []
+    i = 0
 
-    for case in test_cases[:5]:
-        best_specimen = []
-        print(f"N={case[0]}, T={case[1]}, pk={case[2]}, pm={case[3]}")
-        for i in range(2):
-            table_data = calc(a, b, d, xx, l, case[0], case[1], case[2], case[3])
-            best_one = max(row[16] for row in table_data)
-            best_specimen.append(best_one)
-        f_avg = sum(best_specimen) / len(best_specimen)
+    for case in test_cases[:300]:
+        print(f"{i}. N={case[0]}, T={case[1]}, pk={case[2]}, pm={case[3]}")
+        i+=1
+        table_data = calc(a, b, d, xx, l, case[0], case[1], case[2], case[3])
+        best_specimen = max(row[16] for row in table_data)
+        f_avg = best_specimen
 
         results.append((f_avg, case[1], case[0], case))
     return results
@@ -343,7 +343,7 @@ def show_test():
     results = test()
     results.sort(key=lambda x: (-x[0], x[1], x[2]))
 
-    for idx, (f_avg, T, N, case) in enumerate(results, start=1):
+    for idx, (f_avg, T, N, case) in enumerate(results[:5], start=1):
         zbior_str = f"N={case[0]}, T={case[1]}, pk={case[2]}, pm={case[3]}"
         table_test.insert("", "end", values=(idx, zbior_str, f_avg))
 
