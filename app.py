@@ -5,7 +5,6 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 import itertools
-import concurrent.futures
 
 def real_to_bin(a, b, x_real, d):
     l = math.ceil(math.log2((b - a) / d + 1))
@@ -31,9 +30,8 @@ def g_x(x_real, a, b, d):
     return g
 
 # Funkcja całościowa
-def functions(a, b, x, d):
+def functions(a, b, x, d, xx):
     try:
-        xx = dictD[combobox_d.get()]
         f = f_x(round(x, xx))
         g = g_x(x, a, b, d)
 
@@ -46,16 +44,15 @@ def functions(a, b, x, d):
         return [float('nan')] * 3
 
 # wygenerowanie tabeli
-def generate_table(a, b, N, d, x_T):
+def generate_table(a, b, N, d, xx, x_T):
     results = []
-    xx = dictD[combobox_d.get()] + 1
 
     for i in range(N):
         if x_T == 'nan':
             x = round(random.uniform(a, b), xx)
         else:
             x = x_T[i]
-        result = functions(a, b, x, d)
+        result = functions(a, b, x, d, xx)
         results.append(result)
 
     return results
@@ -210,7 +207,7 @@ def calculate():
         pk = float(entry_pk.get())
         pm = float(entry_pm.get())
 
-        table_data = generate_table(a, b, N, d, 'nan')
+        table_data = generate_table(a, b, N, d, xx+1, 'nan')
         global summary
         summary = []
         
@@ -247,7 +244,7 @@ def calculate():
 
             x_T = [row[15] for row in table_data]
             if j < (T-1): 
-                table_data = generate_table(a, b, N, d, x_T)
+                table_data = generate_table(a, b, N, d, xx+1, x_T)
 
             summary.append(calculate_summary(table_data, j + 1))
 
@@ -280,7 +277,7 @@ def show_table(last_generation_data):
         table.insert("", "end", values=[index, x_real, x_bin, f_x_value, f"{percentage:.2f}%"])
 
 def calc(a, b, d, xx, l, N, T, pk, pm):
-    table_data = generate_table(a, b, N, d, 'nan')
+    table_data = generate_table(a, b, N, d, xx, 'nan')
     
     for j in range(T):
         g_sum = sum([row[2] for row in table_data]) 
@@ -299,43 +296,24 @@ def calc(a, b, d, xx, l, N, T, pk, pm):
             row.append(round(q_values[i], 2))
 
         elite = None
-        if elita.get():
-            table_data.sort(key=lambda row: row[1], reverse=True)
-            elite = table_data[0]
+        table_data.sort(key=lambda row: row[1], reverse=True)
+        elite = table_data[0]
 
         selection(table_data, a, b, d, pk)
         crossing(table_data, l)
         mutation(table_data, l, pm, a, b, xx)
 
-        if elita.get():
+        changed = int(random.uniform(0, N - 1))
+        while (table_data[changed][16] > elite[1]):
             changed = int(random.uniform(0, N - 1))
-            while (table_data[changed][16] > elite[1]):
-                changed = int(random.uniform(0, N - 1))
-            table_data[changed] = elite
+        table_data[changed] = elite
 
         x_T = [row[15] for row in table_data]
         if j < (T-1): 
-             table_data = generate_table(a, b, N, d, x_T)
+             table_data = generate_table(a, b, N, d, xx, x_T)
     return table_data
 
-def run_test_case(case):
-    a = -4
-    b = 12 
-    d = 0.001
-    xx = 3
-    l = math.ceil(math.log2((b - a) / d + 1))
-    N, T, pk, pm = case
-    best_specimen = []
-    
-    for _ in range(100):
-        table_data = calc(a, b, d, xx, l, N, T, pk, pm)
-        best_one = max(row[16] for row in table_data)
-        best_specimen.append(best_one)
-    
-    f_avg = sum(best_specimen) / len(best_specimen)
-    return (f_avg, T, N, case)
-
-def parallel_test():
+def test():
     a = -4
     b = 12 
     d = 0.001
@@ -347,12 +325,24 @@ def parallel_test():
     pm = [0.0001, 0.0005, 0.001, 0.005, 0.01]
 
     test_cases = list(itertools.product(N, T, pk, pm))
-
     results = []
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = list(executor.map(run_test_case, test_cases))
 
+    for case in test_cases[:5]:
+        best_specimen = []
+        print(f"N={case[0]}, T={case[1]}, pk={case[2]}, pm={case[3]}")
+        for i in range(2):
+            table_data = calc(a, b, d, xx, l, case[0], case[1], case[2], case[3])
+            best_one = max(row[16] for row in table_data)
+            best_specimen.append(best_one)
+        f_avg = sum(best_specimen) / len(best_specimen)
+
+        results.append((f_avg, case[1], case[0], case))
+    return results
+
+def show_test():
+    results = test()
     results.sort(key=lambda x: (-x[0], x[1], x[2]))
+
     for idx, (f_avg, T, N, case) in enumerate(results, start=1):
         zbior_str = f"N={case[0]}, T={case[1]}, pk={case[2]}, pm={case[3]}"
         table_test.insert("", "end", values=(idx, zbior_str, f_avg))
@@ -425,7 +415,7 @@ button.grid(row=5, columnspan=2, padx=10, pady=10)
 plot_button = tk.Button(root, text="Pokaż wykres", command=lambda: plot_summary(summary))
 plot_button.grid(row=5, column=2, padx=10, pady=10)
 
-test_button = tk.Button(root, text="Testy", command=parallel_test)
+test_button = tk.Button(root, text="Testy", command=show_test)
 test_button.grid(row=5, column=5, padx=10, pady=10)
 
 # table data
@@ -448,8 +438,8 @@ table_test = ttk.Treeview(root, columns=test_columns, show="headings", height=20
 table_test.grid(row=6, column=4, columnspan=3, padx=5, pady=10)
 
 table_test.column("L.P.", width=50)
-table_test.column("zbiór", width=150)
-table_test.column("f avg(x)", width=100)
+table_test.column("zbiór", width=180)
+table_test.column("f avg(x)", width=90)
 
 for col in test_columns:
     table_test.heading(col, text=col)
