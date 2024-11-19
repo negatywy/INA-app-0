@@ -334,13 +334,13 @@ def test():
         best_specimen = []
         print(f"N={case[0]}, T={case[1]}, pk={case[2]}, pm={case[3]}")
         for i in range(5):
-            print(f"{count}.{i} N={case[0]}, T={case[1]}, pk={case[2]}, pm={case[3]}")
             table_data = calc(a, b, d, xx, l, case[0], case[1], case[2], case[3])
             best_one = max(row[16] for row in table_data)
+            print(f"{count}.{i} f(x)max={best_one}")
             best_specimen.append(best_one)
         f_avg = sum(best_specimen) / len(best_specimen)
 
-        results.append((round(f_avg, 2), case[1], case[0], case))
+        results.append((round(f_avg, 4), case[1], case[0], case))
     return results
 
 def show_test():
