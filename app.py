@@ -5,7 +5,6 @@ import tkinter as tk
 from tkinter import ttk
 import matplotlib.pyplot as plt
 
-# Existing functions
 def real_to_bin(a, b, x_real, d):
     l = math.ceil(math.log2((b - a) / d + 1))
     real_to_int = (x_real - a) * (2**l - 1) / (b - a)
@@ -19,7 +18,7 @@ def bin_to_real(a, b, x_bin, d):
     return round(int_to_real, int(-math.log10(d)))
 
 def f_x(x_real):
-    return (x_real % 1) * (np.cos(20 * np.pi * x_real) - np.sin(x_real))
+    return round((x_real % 1) * (np.cos(20 * np.pi * x_real) - np.sin(x_real)), 3)
 
 def steepest_ascent(a, b, d, T):
     l = math.ceil(math.log2((b - a) / d + 1))
@@ -28,7 +27,7 @@ def steepest_ascent(a, b, d, T):
     best_real, best_bin = current_real, current_bin
     best_f = f_x(current_real)
     
-    history = [(current_real, best_f)]  # Track progress
+    history = [(current_real, best_f)]
     
     for _ in range(T):
         local_max = False
@@ -45,14 +44,14 @@ def steepest_ascent(a, b, d, T):
             if best_neighbor[1] > best_f:
                 current_real, best_f = best_neighbor
                 current_bin = real_to_bin(a, b, current_real, d)
-                history.append((current_real, best_f))  # Add step to history
+                history.append((current_real, best_f))
             else:
                 local_max = True
         
         current_real = round(random.uniform(a, b), int(-math.log10(d)))
         current_bin = real_to_bin(a, b, current_real, d)
     
-    return history  # Return list of all iterations within one run
+    return history
 
 def calculate():
     a = float(entry_a.get())
@@ -60,19 +59,15 @@ def calculate():
     d = float(combobox_d.get())
     T = int(entry_T.get())
 
-    # Perform steepest ascent and gather iteration history
     history = steepest_ascent(a, b, d, T)
 
-    # Find the best solution across all iterations
     best_real, best_f = max(history, key=lambda x: x[1])
     best_bin = real_to_bin(a, b, best_real, d)
 
-    # Update the table with the overall best solution
     for row in table.get_children():
         table.delete(row)
     table.insert("", "end", values=(best_real, best_bin, best_f))
 
-    # Plot progress across all iterations
     x_vals, f_vals = zip(*history)
     plt.figure(figsize=(10, 6))
     plt.plot(range(len(f_vals)), f_vals, marker='o', linestyle='-', color='b')
@@ -82,7 +77,6 @@ def calculate():
     plt.show()
 
 
-# GUI setup
 root = tk.Tk()
 root.title("f(x) = (x MOD 1) * cos(20πx) – sin(x)")
 root.state('zoomed')
