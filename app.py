@@ -18,7 +18,7 @@ def bin_to_real(a, b, x_bin, d):
     return round(int_to_real, int(-math.log10(d)))
 
 def f_x(x_real):
-    return (x_real % 1) * (np.cos(20 * np.pi * x_real) - np.sin(x_real))
+    return round((x_real % 1) * (np.cos(20 * np.pi * x_real) - np.sin(x_real)), 3)
 
 def steepest_ascent(a, b, d, T):
     l = math.ceil(math.log2((b - a) / d + 1))
@@ -27,7 +27,8 @@ def steepest_ascent(a, b, d, T):
     best_real, best_bin = current_real, current_bin
     best_f = f_x(current_real)
     
-    history = [(current_real, best_f)]  # Track progress
+    all_f_values = []  # Track all f(x) values
+    iteration_values = []  # Track best f(x) of each iteration
     
     for _ in range(T):
         local_max = False
@@ -39,48 +40,51 @@ def steepest_ascent(a, b, d, T):
                 neighbors.append("".join(new_bin))
             
             neighbor_values = [(bin_to_real(a, b, n_bin, d), f_x(bin_to_real(a, b, n_bin, d))) for n_bin in neighbors]
-            best_neighbor = max(neighbor_values, key=lambda x: x[1])
+            all_f_values.append([val[1] for val in neighbor_values])  # Track all neighbors' values
             
+            best_neighbor = max(neighbor_values, key=lambda x: x[1])
             if best_neighbor[1] > best_f:
                 current_real, best_f = best_neighbor
                 current_bin = real_to_bin(a, b, current_real, d)
-                history.append((current_real, best_f))  # Add step to history
             else:
                 local_max = True
         
+        iteration_values.append(best_f)  # Record the best value of this iteration
         current_real = round(random.uniform(a, b), int(-math.log10(d)))
         current_bin = real_to_bin(a, b, current_real, d)
     
-    return history  # Return list of all iterations within one run
-
+    return best_real, best_bin, best_f, all_f_values, iteration_values
 
 def calculate():
     a = float(entry_a.get())
     b = float(entry_b.get())
     d = float(combobox_d.get())
     T = int(entry_T.get())
-
-    # Perform steepest ascent and gather iteration history
-    history = steepest_ascent(a, b, d, T)
-
-    # Find the best solution across all iterations
-    best_real, best_f = max(history, key=lambda x: x[1])
-    best_bin = real_to_bin(a, b, best_real, d)
-
-    # Update the table with the overall best solution
+    
+    best_real, best_bin, best_f, all_f_values, iteration_values = steepest_ascent(a, b, d, T)
+    
+    # Clear the table and insert the best solution
     for row in table.get_children():
         table.delete(row)
     table.insert("", "end", values=(best_real, best_bin, best_f))
-
-    # Plot progress across all iterations
-    x_vals, f_vals = zip(*history)
+    
+    # Plot results
     plt.figure(figsize=(10, 6))
-    plt.plot(range(len(f_vals)), f_vals, marker='o', linestyle='-', color='b')
-    plt.xlabel("Iteration")
+    
+    # Plot all intermediate f(x) values
+    for step_f_values in all_f_values:
+        plt.plot(step_f_values, marker='.', linestyle='--', alpha=0.5)
+    
+    # Plot the best f(x) evolution
+    plt.plot(iteration_values, marker='o', color='red', linewidth=2, label='Best f(x)')
+    
+    plt.xlabel("Iteration Steps")
     plt.ylabel("f(x)")
-    plt.title("Function Optimization using Steepest Ascent")
+    plt.title("Function Optimization: Steepest Ascent Algorithm")
+    plt.legend()
     plt.show()
 
+# GUI setup
 root = tk.Tk()
 root.title("f(x) = (x MOD 1) * cos(20πx) – sin(x)")
 root.state('zoomed')
