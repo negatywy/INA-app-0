@@ -1,9 +1,9 @@
 import numpy as np
 import math
 import random
-import matplotlib.pyplot as plt
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
+import matplotlib.pyplot as plt
 
 def real_to_bin(a, b, x_real, d):
     l = math.ceil(math.log2((b - a) / d + 1))
@@ -27,11 +27,10 @@ def steepest_ascent(a, b, d, T):
     best_real, best_bin = current_real, current_bin
     best_f = f_x(current_real)
     
-    history = [(current_real, current_bin, best_f)]
+    history = [(current_real, best_f)]  # Track progress
     
-    for t in range(T):
+    for _ in range(T):
         local_max = False
-        
         while not local_max:
             neighbors = []
             for i in range(l):
@@ -39,137 +38,85 @@ def steepest_ascent(a, b, d, T):
                 new_bin[i] = '1' if new_bin[i] == '0' else '0'
                 neighbors.append("".join(new_bin))
             
-            # Evaluate neighbors
             neighbor_values = [(bin_to_real(a, b, n_bin, d), f_x(bin_to_real(a, b, n_bin, d))) for n_bin in neighbors]
             best_neighbor = max(neighbor_values, key=lambda x: x[1])
             
             if best_neighbor[1] > best_f:
                 current_real, best_f = best_neighbor
                 current_bin = real_to_bin(a, b, current_real, d)
-                history.append((current_real, current_bin, best_f))
+                history.append((current_real, best_f))  # Add step to history
             else:
                 local_max = True
         
-        # Restart from a new point
         current_real = round(random.uniform(a, b), int(-math.log10(d)))
         current_bin = real_to_bin(a, b, current_real, d)
     
-    return history
+    return history  # Return list of all iterations within one run
 
-# Parameters
-a, b = -4, 12
-d = 0.001
-T = 100
 
-history = steepest_ascent(a, b, d, T)
+def calculate():
+    a = float(entry_a.get())
+    b = float(entry_b.get())
+    d = float(combobox_d.get())
+    T = int(entry_T.get())
 
-# Tkinter GUI
-def create_gui():
-    root = tk.Tk()
-    root.title("Steepest Ascent Results")
-    
-    # Treeview setup
-    columns = ("X Real", "Binary", "f(X)")
-    tree = ttk.Treeview(root, columns=columns, show="headings", height=20)
-    
-    for col in columns:
-        tree.heading(col, text=col)
-        tree.column(col, anchor="center", width=120)
-    
-    # Insert data
-    for real, binary, value in history:
-        tree.insert("", "end", values=(real, binary, value))
-    
-    # Add scrollbar
-    scrollbar = ttk.Scrollbar(root, orient="vertical", command=tree.yview)
-    tree.configure(yscroll=scrollbar.set)
-    
-    tree.pack(side="left", fill="both", expand=True)
-    scrollbar.pack(side="right", fill="y")
-    
-    root.mainloop()
+    # Perform steepest ascent and gather iteration history
+    history = steepest_ascent(a, b, d, T)
 
-# Plot results
-x_vals = [x[0] for x in history]
-f_vals = [x[2] for x in history]
+    # Find the best solution across all iterations
+    best_real, best_f = max(history, key=lambda x: x[1])
+    best_bin = real_to_bin(a, b, best_real, d)
 
-# plt.plot(x_vals, f_vals, marker='o')
-# plt.xlabel("x_real")
-# plt.ylabel("f(x_real)")
-# plt.title("Function Optimization using Steepest Ascent")
-# plt.show()
+    # Update the table with the overall best solution
+    for row in table.get_children():
+        table.delete(row)
+    table.insert("", "end", values=(best_real, best_bin, best_f))
 
-# wygnenerowanie okienka
+    # Plot progress across all iterations
+    x_vals, f_vals = zip(*history)
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(len(f_vals)), f_vals, marker='o', linestyle='-', color='b')
+    plt.xlabel("Iteration")
+    plt.ylabel("f(x)")
+    plt.title("Function Optimization using Steepest Ascent")
+    plt.show()
+
 root = tk.Tk()
-root.title("f(x)= x MOD 1 *cos(20π*x) – sin(x)")
+root.title("f(x) = (x MOD 1) * cos(20πx) – sin(x)")
 root.state('zoomed')
 
-# input a
 label_a = tk.Label(root, text="Podaj a:")
-label_a.grid(row=0, column=0, sticky='w', padx=5, pady=5)
+label_a.grid(row=0, column=0, padx=5, pady=5)
 entry_a = tk.Entry(root, width=10)
-entry_a.grid(row=0, column=1, sticky='w', padx=5, pady=5)
+entry_a.grid(row=0, column=1, padx=5, pady=5)
 entry_a.insert(0, "-4")
 
-# input b
 label_b = tk.Label(root, text="Podaj b:")
-label_b.grid(row=0, column=2, sticky='w', padx=5, pady=5)
+label_b.grid(row=0, column=2, padx=5, pady=5)
 entry_b = tk.Entry(root, width=10)
-entry_b.grid(row=0, column=3, sticky='w', padx=5, pady=5)
+entry_b.grid(row=0, column=3, padx=5, pady=5)
 entry_b.insert(0, "12")
 
-# input d
-dictD = {
-    "0.1": 1,
-    "0.01": 2,
-    "0.001": 3,
-    "0.0001": 4
-}
 label_d = tk.Label(root, text="Wybierz d:")
-label_d.grid(row=3, column=0, sticky='w', padx=5, pady=5)
+label_d.grid(row=1, column=0, padx=5, pady=5)
 combobox_d = ttk.Combobox(root, values=[0.1, 0.01, 0.001, 0.0001])
-combobox_d.grid(row=3, column=1, sticky='w', padx=5, pady=5)
+combobox_d.grid(row=1, column=1, padx=5, pady=5)
 combobox_d.current(2)
 
-# input T
 label_T = tk.Label(root, text="Podaj T:")
-label_T.grid(row=3, column=2, sticky='w', padx=5, pady=5)
+label_T.grid(row=1, column=2, padx=5, pady=5)
 entry_T = tk.Entry(root, width=10)
-entry_T.grid(row=3, column=3, sticky='w', padx=5, pady=5)
+entry_T.grid(row=1, column=3, padx=5, pady=5)
+entry_T.insert(0, "30")
 
-# buttons
-button = tk.Button(root, text="Oblicz", command=create_gui)
-button.grid(row=5, columnspan=2, padx=10, pady=10)
+button = tk.Button(root, text="Oblicz", command=calculate)
+button.grid(row=2, columnspan=4, pady=10)
 
-
-# test_button = tk.Button(root, text="Testy", command=show_test)
-# test_button.grid(row=5, column=5, padx=10, pady=10)
-
-# table data
-columns = ["L.P.", "x(real)", "x(bin)", "f(x)", "Percentage"]
+columns = ["x(real)", "x(bin)", "f(x)"]
 table = ttk.Treeview(root, columns=columns, show="headings", height=20)
-table.grid(row=6, column=0, columnspan=3, padx=5, pady=10)
-
-table.column("L.P.", width=40)
-table.column("x(real)", width=80)
-table.column("x(bin)", width=110)
-table.column("f(x)", width=80)
-table.column("Percentage", width=100)
-
 for col in columns:
     table.heading(col, text=col)
+    table.column(col, width=120)
+table.grid(row=3, column=0, columnspan=4, padx=5, pady=5)
 
-# test table data
-# test_columns = ["L.P.", "zbiór", "f avg(x)"]
-# table_test = ttk.Treeview(root, columns=test_columns, show="headings", height=20)
-# table_test.grid(row=6, column=4, columnspan=3, padx=5, pady=10)
-
-# table_test.column("L.P.", width=50)
-# table_test.column("zbiór", width=180)
-# table_test.column("f avg(x)", width=90)
-
-# for col in test_columns:
-#     table_test.heading(col, text=col)
-
-# launch the app
 root.mainloop()
