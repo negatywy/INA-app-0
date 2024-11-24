@@ -71,9 +71,9 @@ def calculate():
     x_vals, f_vals = zip(*history)
     plt.figure(figsize=(10, 6))
     plt.plot(range(len(f_vals)), f_vals, marker='o', linestyle='-', color='b')
-    plt.xlabel("Iteration")
+    plt.xlabel("Iteracja")
     plt.ylabel("f(x)")
-    plt.title("Function Optimization using Steepest Ascent")
+    plt.title("Algorytm Największego wzrostu")
     plt.show()
 
 def test():
@@ -82,41 +82,33 @@ def test():
     d = float(combobox_d.get())
     T = 100
 
-    # List to track how many times the optimal solution was found in each iteration
-    optimal_solution_count = [0] * T
+    success_count = [0] * T
 
-    # Run the steepest ascent algorithm 1000 times
     for j in range(1000):
         history = steepest_ascent(a, b, d, T)
-
-        # Ensure we are checking up to T iterations, regardless of history length
         for i in range(min(T, len(history))):
             if j % 10 == 0: print(history[i][1])
             if history[i][1] == 1.996:
-                optimal_solution_count[i] += 1
+                success_count[i] += 1
 
-    # Clear the existing table for test results
     for row in table_test.get_children():
         table_test.delete(row)
 
-    # Variables to track the cumulative sum of successes
     cumulative_successes = 0
     success_percentages = []
 
-    # Insert the new data into the test results table
     for i in range(T):
-        cumulative_successes += optimal_solution_count[i]
-        success_percentage = (cumulative_successes / 1000) * 100  # Percentage of successes
+        cumulative_successes += success_count[i]
+        success_percentage = (cumulative_successes / 1000) * 100
         success_percentages.append(success_percentage)
 
-        table_test.insert("", "end", values=(i + 1, optimal_solution_count[i], cumulative_successes, f"{success_percentage:.2f}%"))
+        table_test.insert("", "end", values=(i + 1, success_count[i], cumulative_successes, f"{success_percentage:.2f}%"))
 
-    # Plot the Success Percentage vs. Iteration (T)
     plt.figure(figsize=(10, 6))
     plt.plot(range(1, T + 1), success_percentages, marker='o', linestyle='-', color='g')
-    plt.xlabel("Iteration (T)")
-    plt.ylabel("Success Percentage (%)")
-    plt.title("Success Percentage over Iterations")
+    plt.xlabel("Iteracje (T)")
+    plt.ylabel("Odsetek sukcesów (%)")
+    plt.title("Skuteczność algorytmu GEO")
     plt.show()
 
 
@@ -161,15 +153,13 @@ table.grid(row=3, column=0, columnspan=4, padx=5, pady=5)
 button_test = tk.Button(root, text="Test", command=test)
 button_test.grid(row=2, column=4, pady=10)
 
-# Add the new columns to the test table
-columns_test = ["Iteration", "Optimal Solution Count", "Sum of Successes", "Success Percentage"]
+columns_test = ["Iteracja", "Liczba sukcesów", "Sukces kumulatywnie", "Odsetek sukcesów"]
 table_test = ttk.Treeview(root, columns=columns_test, show="headings", height=20)
 for col in columns_test:
     table_test.heading(col, text=col)
-    table_test.column(col, width=150)  # Adjust width as needed
+    table_test.column(col, width=150)
 table_test.grid(row=3, column=4, columnspan=4, padx=5, pady=5)
 
-# Add Scrollbar for table_test
 scrollbar = ttk.Scrollbar(root, orient="vertical", command=table_test.yview)
 scrollbar.grid(row=3, column=8, sticky="ns", padx=5, pady=5)
 table_test.configure(yscrollcommand=scrollbar.set)
